@@ -1,0 +1,65 @@
+{
+  "agents": {
+    "defaults": {
+      "models": {
+        "openai/glm-4.5": {
+          "alias": "glm"
+        },
+        "flock/qwen3-235b-a22b-thinking-2507": {
+          "alias": "flock-qwen-thinking"
+        },
+        "flock/kimi-k2-thinking": {
+          "alias": "flock-kimi"
+        },
+        "flock/qwen3-30b-a3b-instruct-2507": {
+          "alias": "flock-qwen"
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "greenclaw-orchestrator",
+        "description": "Main orchestrator using Z.AI",
+        "model": "openai/glm-4.5"
+      },
+      {
+        "id": "action-advisor",
+        "description": "FLock.io powered action advisor",
+        "model": "flock/qwen3-235b-a22b-thinking-2507"
+      }
+    ]
+  },
+  "models": {
+    "providers": {
+      "openai": {
+        "apiKey": "YOUR_ZAI_API_KEY",
+        "baseUrl": "https://api.z.ai/api/paas/v4"
+      },
+      "flock": {
+        "apiKey": "YOUR_FLOCK_API_KEY",
+        "models": [
+          "flock/qwen3-235b-a22b-thinking-2507",
+          "flock/kimi-k2-thinking",
+          "flock/qwen3-30b-a3b-instruct-2507"
+        ]
+      }
+    }
+  },
+  "skills": {
+    "entries": {
+      "climate-monitor": {
+        "env": {
+          "OPENWEATHER_API_KEY": "YOUR_KEY",
+          "WAQI_API_KEY": "YOUR_KEY"
+        }
+      },
+      "risk-analyzer": {
+        "env": {
+          "ZAI_API_KEY": "YOUR_KEY"
+        }
+      },
+      "community-tracker": {},
+      "edu-mode": {}
+    }
+  }
+}

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenClaw Dashboard — Climate Action Intelligence</title>
+    <meta name="description"
+        content="Real-time climate monitoring, AI risk analysis, and community impact tracking powered by OpenClaw, Z.AI GLM, and FLock.io">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="//unpkg.com/globe.gl"></script>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">🌍🦞</span>
+                <div class="logo-text">
+                    <h1>GreenClaw</h1>
+                    <span class="logo-subtitle">Climate Action Intelligence</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="status-badge live-badge">
+                <span class="pulse-dot"></span>
+                <span>LIVE</span>
+            </div>
+            <!-- Kids Mode Toggle -->
+            <button class="kids-mode-toggle" id="kidsModeToggle" onclick="toggleKidsMode()">
+                <span class="kids-mode-icon">🎮</span>
+                <span class="kids-mode-text">Kids Mode: OFF</span>
+            </button>
+            <div class="status-badge">
+                <span>🤖 Powered by Z.AI GLM + FLock.io</span>
+            </div>
+            <div class="status-badge">
+                <span>🦞 Built on OpenClaw</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="search-box">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="citySearch" placeholder="Search city..." value="London">
+                <button class="search-btn" id="searchBtn" onclick="loadCityData()">Go</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard">
+        <!-- Global Threat Map (3D Globe) -->
+        <section class="dashboard-row">
+            <div class="card card-full-width globe-card" id="globeCard">
+                <div class="card-header globe-header">
+                    <h2>🌍 Global Threat Map</h2>
+                    <span class="card-badge pulse-badge"
+                        style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4);">LIVE
+                        SATELLITE</span>
+                </div>
+                <div id="globeViz" class="globe-container"></div>
+            </div>
+        </section>
+
+        <!-- Row 1: Weather + AQI + Disasters -->
+        <section class="dashboard-row">
+            <!-- Weather Card -->
+            <div class="card card-weather" id="weatherCard">
+                <div class="card-header">
+                    <h2>🌡️ Climate Monitor</h2>
+                    <span class="card-badge">Real-time</span>
+                </div>
+                <div class="card-body">
+                    <div class="weather-main">
+                        <span class="weather-icon" id="weatherIcon">☁️</span>
+                        <div class="weather-temp">
+                            <span class="temp-value" id="tempValue">--</span>
+                            <span class="temp-unit">°C</span>
+                        </div>
+                    </div>
+                    <div class="weather-city" id="weatherCity">Loading...</div>
+                    <div class="weather-condition" id="weatherCondition">--</div>
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Feels Like</span>
+                            <span class="detail-value" id="feelsLike">--°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Humidity</span>
+                            <span class="detail-value" id="humidity">--%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Wind</span>
+                            <span class="detail-value" id="wind">-- m/s</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Pressure</span>
+                            <span class="detail-value" id="pressure">-- hPa</span>
+                        </div>
+                    </div>
+                    <!-- Forecast -->
+                    <div class="forecast-strip" id="forecastStrip">
+                        <!-- Dynamically filled -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- AQI Card -->
+            <div class="card card-aqi" id="aqiCard">
+                <div class="card-header">
+                    <h2>💨 Air Quality</h2>
+                    <span class="card-badge" id="aqiCategory">--</span>
+                </div>
+                <div class="card-body">
+                    <div class="aqi-gauge">
+                        <svg class="aqi-ring" viewBox="0 0 120 120">
+                            <circle class="aqi-ring-bg" cx="60" cy="60" r="52" />
+                            <circle class="aqi-ring-fill" id="aqiRingFill" cx="60" cy="60" r="52" />
+                        </svg>
+                        <div class="aqi-value-wrapper">
+                            <span class="aqi-value" id="aqiValue">--</span>
+                            <span class="aqi-label">AQI</span>
+                        </div>
+                    </div>
+                    <div class="aqi-icon-large" id="aqiIcon">🟢</div>
+                    <div class="aqi-advice" id="aqiAdvice">Loading air quality data...</div>
+                    <div class="pollutant-grid" id="pollutantGrid">
+                        <!-- Dynamically filled -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disasters Card -->
+            <div class="card card-disasters" id="disasterCard">
+                <div class="card-header">
+                    <h2>🌪️ Active Disasters</h2>
+                    <span class="card-badge" id="disasterCount">--</span>
+                </div>
+                <div class="card-body">
+                    <div class="disaster-list" id="disasterList">
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <span>Scanning NASA EONET...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Row 2: Z.AI Risk Analysis (FULL WIDTH SHOWCASE) -->
+        <section class="dashboard-row">
+            <div class="card card-risk card-full-width" id="riskCard">
+                <div class="card-header">
+                    <h2>⚠️ AI Risk Analysis</h2>
+                    <div class="card-header-right">
+                        <span class="card-badge badge-zai">🧠 Z.AI GLM-4.5 Thinking Mode</span>
+                        <button class="analyze-btn" id="analyzeBtn" onclick="runRiskAnalysis()">
+                            <span class="btn-icon">⚡</span> Run Analysis
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body risk-body">
+                    <div class="risk-left">
+                        <div class="risk-score-display">
+                            <div class="risk-score-circle" id="riskScoreCircle">
+                                <span class="risk-score-number" id="riskScoreNumber">--</span>
+                                <span class="risk-score-label">Risk Score</span>
+                            </div>
+                            <div class="risk-level-text" id="riskLevelText">
+                                Click "Run Analysis" to begin
+                            </div>
+                        </div>
+                        <div class="risk-categories" id="riskCategories">
+                            <!-- Dynamically filled -->
+                        </div>
+                    </div>
+                    <div class="risk-right">
+                        <div class="thinking-panel" id="thinkingPanel">
+                            <div class="thinking-header">
+                                <span class="thinking-icon">🧠</span>
+                                <span>Z.AI GLM Reasoning Chain</span>
+                                <span class="thinking-status" id="thinkingStatus">Idle</span>
+                            </div>
+                            <div class="thinking-content" id="thinkingContent">
+                                <div class="thinking-placeholder">
+                                    AI reasoning will appear here when analysis runs...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recommendations-panel" id="recommendationsPanel">
+                            <h3>📋 Recommendations</h3>
+                            <div id="recommendationsList" class="recommendations-list">
+                                <div class="recommendation-placeholder">Run analysis to get recommendations</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Row 2.5: Autonomous Agent Pipeline Log -->
+        <section class="dashboard-row">
+            <div class="card card-pipeline card-full-width" id="pipelineCard">
+                <div class="card-header">
+                    <h2>🤖 Autonomous Agent Pipeline</h2>
+                    <div class="card-header-right">
+                        <span class="card-badge badge-agent">Live Agent</span>
+                        <span class="pipeline-cycle" id="pipelineCycle">Cycle: --</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-stages">
+                        <div class="pipeline-stage" id="stageMonitor">
+                            <span class="stage-icon">📡</span>
+                            <span class="stage-label">Monitor</span>
+                            <span class="stage-status">Scanning</span>
+                        </div>
+                        <div class="pipeline-arrow">→</div>
+                        <div class="pipeline-stage" id="stageDetect">
+                            <span class="stage-icon">🔍</span>
+                            <span class="stage-label">Detect</span>
+                            <span class="stage-status">Thresholds</span>
+                        </div>
+                        <div class="pipeline-arrow">→</div>
+                        <div class="pipeline-stage" id="stageAnalyze">
+                            <span class="stage-icon">🧠</span>
+                            <span class="stage-label">Z.AI</span>
+                            <span class="stage-status">Analyze</span>
+                        </div>
+                        <div class="pipeline-arrow">→</div>
+                        <div class="pipeline-stage" id="stageAdvise">
+                            <span class="stage-icon">💚</span>
+                            <span class="stage-label">FLock</span>
+                            <span class="stage-status">Advise</span>
+                        </div>
+                        <div class="pipeline-arrow">→</div>
+                        <div class="pipeline-stage" id="stageAlert">
+                            <span class="stage-icon">🔔</span>
+                            <span class="stage-label">Alert</span>
+                            <span class="stage-status">Push</span>
+                        </div>
+                    </div>
+                    <div class="pipeline-log" id="pipelineLog">
+                        <div class="pipeline-log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-type">⏳</span>
+                            <span class="log-detail">Waiting for first autonomous cycle...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Row 3: Action Advisor + Community Tracker + Edu Mode -->
+        <section class="dashboard-row">
+            <!-- Action Advisor -->
+            <div class="card card-advisor" id="advisorCard">
+                <div class="card-header">
+                    <h2>💚 Action Advisor</h2>
+                    <span class="card-badge badge-flock">FLock.io</span>
+                </div>
+                <div class="card-body">
+                    <div class="tip-carousel" id="tipCarousel">
+                        <div class="tip-card active" data-index="0">
+                            <div class="tip-icon">🚲</div>
+                            <div class="tip-text">Cycle instead of drive for your commute</div>
+                            <div class="tip-meta">
+                                <span class="tip-impact">🌳 High Impact</span>
+                                <span class="tip-savings">-2.3 kg CO₂/trip</span>
+                            </div>
+                        </div>
+                        <div class="tip-card" data-index="1">
+                            <div class="tip-icon">🥗</div>
+                            <div class="tip-text">Try a plant-based meal today</div>
+                            <div class="tip-meta">
+                                <span class="tip-impact">🌿 Medium Impact</span>
+                                <span class="tip-savings">-2.5 kg CO₂/meal</span>
+                            </div>
+                        </div>
+                        <div class="tip-card" data-index="2">
+                            <div class="tip-icon">💡</div>
+                            <div class="tip-text">Switch to LED bulbs in 3 rooms</div>
+                            <div class="tip-meta">
+                                <span class="tip-impact">🌱 Moderate</span>
+                                <span class="tip-savings">-45 kg CO₂/year</span>
+                            </div>
+                        </div>
+                        <div class="tip-card" data-index="3">
+                            <div class="tip-icon">🚌</div>
+                            <div class="tip-text">Use public transport once this week</div>
+                            <div class="tip-meta">
+                                <span class="tip-impact">🌳 High Impact</span>
+                                <span class="tip-savings">-1.2 kg CO₂/trip</span>
+                            </div>
+                        </div>
+                        <div class="tip-card" data-index="4">
+                            <div class="tip-icon">🛍️</div>
+                            <div class="tip-text">Bring reusable bags to every store</div>
+                            <div class="tip-meta">
+                                <span class="tip-impact">🌱 Moderate</span>
+                                <span class="tip-savings">-0.2 kg CO₂/use</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tip-dots" id="tipDots"></div>
+                    <button class="refresh-tips-btn" onclick="cycleTip()">Next Tip →</button>
+                </div>
+            </div>
+
+            <!-- Community Tracker -->
+            <div class="card card-community" id="communityCard">
+                <div class="card-header">
+                    <h2>📊 Community Impact</h2>
+                    <span class="card-badge">Live Tracker</span>
+                </div>
+                <div class="card-body">
+                    <div class="impact-stats">
+                        <div class="stat-circle">
+                            <span class="stat-number" id="totalCO2">127.4</span>
+                            <span class="stat-unit">kg CO₂</span>
+                            <span class="stat-label">Total Saved</span>
+                        </div>
+                    </div>
+                    <div class="equivalents-grid">
+                        <div class="equiv-item">
+                            <span class="equiv-icon">🌳</span>
+                            <span class="equiv-value" id="treesEquiv">5.8</span>
+                            <span class="equiv-label">Trees Planted</span>
+                        </div>
+                        <div class="equiv-item">
+                            <span class="equiv-icon">🚗</span>
+                            <span class="equiv-value" id="carEquiv">607</span>
+                            <span class="equiv-label">Car km Avoided</span>
+                        </div>
+                        <div class="equiv-item">
+                            <span class="equiv-icon">✈️</span>
+                            <span class="equiv-value" id="flightEquiv">0.51</span>
+                            <span class="equiv-label">Flights Offset</span>
+                        </div>
+                    </div>
+                    <div class="action-log">
+                        <h3>Recent Actions</h3>
+                        <div class="log-list" id="actionLog">
+                            <div class="log-item"><span class="log-icon">♻️</span><span>Recycled 5 plastic
+                                    bottles</span><span class="log-co2">-2.5 kg</span></div>
+                            <div class="log-item"><span class="log-icon">🚲</span><span>Cycled to work</span><span
+                                    class="log-co2">-2.3 kg</span></div>
+                            <div class="log-item"><span class="log-icon">🥗</span><span>Plant-based lunch</span><span
+                                    class="log-co2">-2.5 kg</span></div>
+                            <div class="log-item"><span class="log-icon">🚌</span><span>Took the bus</span><span
+                                    class="log-co2">-1.2 kg</span></div>
+                        </div>
+                    </div>
+                    <div class="log-input-row">
+                        <input type="text" id="actionInput" placeholder="Log an eco-action..." class="action-input">
+                        <button class="log-btn" onclick="logAction()">Log ✓</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edu Mode + SDG -->
+            <div class="card card-edu" id="eduCard">
+                <div class="card-header">
+                    <h2>🎮 Edu Mode</h2>
+                    <span class="card-badge badge-kids">Kid-Friendly</span>
+                </div>
+                <div class="card-body">
+                    <div class="quiz-section">
+                        <div class="quiz-question" id="quizQuestion">
+                            🌍 What gas do trees breathe in?
+                        </div>
+                        <div class="quiz-options" id="quizOptions">
+                            <button class="quiz-option" onclick="checkAnswer(this, false)">A) Oxygen</button>
+                            <button class="quiz-option correct" onclick="checkAnswer(this, true)">B) Carbon
+                                Dioxide</button>
+                            <button class="quiz-option" onclick="checkAnswer(this, false)">C) Nitrogen</button>
+                        </div>
+                        <div class="quiz-result" id="quizResult"></div>
+                        <button class="next-question-btn" id="nextQuestionBtn" onclick="nextQuestion()"
+                            style="display:none">Next Question →</button>
+                    </div>
+                    <div class="fun-fact" id="funFact">
+                        <span class="fact-label">🤯 Fun Fact</span>
+                        <p id="factText">A single large whale captures about 33 TONS of CO₂ over its lifetime!</p>
+                    </div>
+                    <div class="sdg-badges">
+                        <span class="sdg-badge sdg-13">SDG 13</span>
+                        <span class="sdg-badge sdg-11">SDG 11</span>
+                        <span class="sdg-badge sdg-4">SDG 4</span>
+                        <span class="sdg-badge sdg-17">SDG 17</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-left">
+            <span>🌍🦞 GreenClaw — UK AI Agent Hackathon EP4 × OpenClaw</span>
+        </div>
+        <div class="footer-center">
+            <span class="tech-pill">OpenClaw</span>
+            <span class="tech-pill">Z.AI GLM-4.5</span>
+            <span class="tech-pill">FLock.io</span>
+            <span class="tech-pill">OpenWeatherMap</span>
+            <span class="tech-pill">NASA EONET</span>
+        </div>
+        <div class="footer-right">
+            <span>SDG 13 · Climate Action 🌱</span>
+        </div>
+    </footer>
+
+    <!-- Alert Toast Container -->
+    <div class="alert-container" id="alertContainer"></div>
+
+    <!-- Chat Widget -->
+    <div class="chat-bubble" id="chatBubble" onclick="toggleChat()">
+        <span class="chat-bubble-icon">💬</span>
+        <span class="chat-bubble-label">Ask GreenClaw</span>
+    </div>
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <span class="chat-header-icon">🌍🦞</span>
+                <div>
+                    <div class="chat-header-title">GreenClaw Agent</div>
+                    <div class="chat-header-sub">Powered by Z.AI + FLock.io</div>
+                </div>
+            </div>
+            <button class="chat-close" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Ask about weather, risks, eco-tips..."
+                onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

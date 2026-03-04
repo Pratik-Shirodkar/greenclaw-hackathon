@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenClaw — Autonomous Climate Operations Center</title>
+    <meta name="description"
+        content="5 AI agents that protect your city 24/7 without any human input. Powered by Z.AI GLM + FLock.io + OpenClaw.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0e17;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --text: #f0f4f8;
+            --text-dim: #94a3b8;
+            --green: #4ade80;
+            --blue: #60a5fa;
+            --purple: #a78bfa;
+            --amber: #fbbf24;
+            --red: #f87171;
+            --green-dim: rgba(74, 222, 128, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ── Animated background ── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(74, 222, 128, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(96, 165, 250, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.04) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .bg-grid::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(20px);
+            background: rgba(10, 14, 23, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo {
+            font-size: 1.8rem;
+        }
+
+        .nav-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--green);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--green), #22c55e);
+            color: #0a0e17;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.4);
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            background: transparent;
+            color: var(--text);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--green);
+            background: var(--green-dim);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--bg-card);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 100px;
+            font-size: 0.78rem;
+            color: var(--green);
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: fadeUp 0.8s ease-out;
+        }
+
+        .hero-badge .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+            animation: fadeUp 0.8s ease-out 0.1s both;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--green), var(--blue), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            max-width: 680px;
+            margin-bottom: 2.5rem;
+            animation: fadeUp 0.8s ease-out 0.2s both;
+            line-height: 1.7;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeUp 0.8s ease-out 0.3s both;
+        }
+
+        /* ── Agent Cards ── */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--green);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .section-desc {
+            text-align: center;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            font-size: 0.95rem;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .agent-card:nth-child(1)::before {
+            background: var(--blue);
+        }
+
+        .agent-card:nth-child(2)::before {
+            background: var(--amber);
+        }
+
+        .agent-card:nth-child(3)::before {
+            background: var(--green);
+        }
+
+        .agent-card:nth-child(4)::before {
+            background: var(--red);
+        }
+
+        .agent-card:nth-child(5)::before {
+            background: var(--purple);
+        }
+
+        .agent-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-card .agent-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .agent-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .agent-card .agent-role-text {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+        }
+
+        .agent-card p {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .agent-card .model-badge {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Flow section ── */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 2rem 0;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 1.2rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            min-width: 120px;
+            transition: all 0.3s;
+        }
+
+        .flow-step:hover {
+            border-color: var(--green);
+            background: var(--green-dim);
+        }
+
+        .flow-step .flow-icon {
+            font-size: 1.5rem;
+        }
+
+        .flow-step .flow-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .flow-step .flow-sub {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+
+        .flow-arrow {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+        }
+
+        /* ── Live demo ── */
+        .demo-section {
+            background: var(--bg-card);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin: 4rem auto;
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(74, 222, 128, 0.08) 0%, transparent 60%);
+        }
+
+        .demo-section h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .demo-section p {
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .demo-section .btn-primary {
+            font-size: 1rem;
+            padding: 14px 32px;
+            position: relative;
+        }
+
+        /* ── Tech Stack ── */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .tech-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 1.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            transition: all 0.3s;
+        }
+
+        .tech-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-3px);
+        }
+
+        .tech-card .tech-icon {
+            font-size: 1.5rem;
+        }
+
+        .tech-card .tech-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .tech-card .tech-use {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* ── SDG ── */
+        .sdg-banner {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 2rem;
+            background: rgba(74, 222, 128, 0.06);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+            border-radius: 16px;
+            margin: 3rem 0;
+        }
+
+        .sdg-icon {
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+
+        .sdg-text h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--green);
+        }
+
+        .sdg-text p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: var(--green);
+            text-decoration: none;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+                letter-spacing: -1px;
+            }
+
+            .agents-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .flow-container {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+
+            nav {
+                padding: 0.8rem 1rem;
+            }
+
+            .nav-links a {
+                display: none;
+            }
+
+            .sdg-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-grid"></div>
+
+    <!-- Nav -->
+    <nav>
+        <a class="nav-brand" href="/">
+            <span class="nav-logo">🌍🦞</span>
+            <span class="nav-name">GreenClaw</span>
+        </a>
+        <div class="nav-links">
+            <a href="#agents">Agents</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#tech">Tech Stack</a>
+            <a href="/dashboard" class="btn-primary">Open Dashboard →</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Autonomous Agents Running Now
+        </div>
+        <h1>
+            5 AI Agents That Protect<br>
+            Your City <span class="gradient">24/7</span>
+        </h1>
+        <p>
+            GreenClaw is an autonomous climate operations center. No human input needed —
+            our agents continuously monitor, analyze, reason, and alert across
+            web and Telegram using Z.AI and FLock.io.
+        </p>
+        <div class="hero-ctas">
+            <a href="/dashboard" class="btn-primary">🚀 Launch Dashboard</a>
+            <a href="#agents" class="btn-outline">👀 Meet the Agents</a>
+        </div>
+    </section>
+
+    <!-- Agents -->
+    <section class="section" id="agents">
+        <div class="section-label">Multi-Agent System</div>
+        <h2 class="section-title">Meet the Team</h2>
+        <p class="section-desc">
+            Five specialized AI agents that autonomously collaborate to detect environmental threats, analyze risks, and
+            protect communities.
+        </p>
+
+        <div class="agents-grid">
+            <div class="agent-card">
+                <div class="agent-icon">🛰️</div>
+                <h3>Sentinel</h3>
+                <div class="agent-role-text">Environmental Monitor</div>
+                <p>Continuously scans 5+ cities for AQI, temperature, and weather anomalies. Detects threshold breaches
+                    and flags for analysis.</p>
+                <span class="model-badge" style="background:rgba(96,165,250,0.12);color:var(--blue)">WAQI +
+                    OpenWeather</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🧠</div>
+                <h3>Analyst</h3>
+                <div class="agent-role-text">Risk Intelligence</div>
+                <p>Deep multi-factor risk analysis powered by Z.AI GLM-4-Plus. Scores risks, identifies patterns, and
+                    generates strategic recommendations.</p>
+                <span class="model-badge" style="background:rgba(251,191,36,0.12);color:var(--amber)">Z.AI
+                    GLM-4-Plus</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">💚</div>
+                <h3>Advisor</h3>
+                <div class="agent-role-text">Sustainability Coach</div>
+                <p>Uses FLock's open-source models to generate personalized, actionable eco-recommendations based on
+                    local conditions.</p>
+                <span class="model-badge" style="background:rgba(74,222,128,0.12);color:var(--green)">FLock
+                    qwen3-30b</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">📢</div>
+                <h3>Dispatcher</h3>
+                <div class="agent-role-text">Alert Controller</div>
+                <p>Publishes enriched alerts across all channels — web dashboard, Telegram, and future integrations. No
+                    alert goes unseen.</p>
+                <span class="model-badge"
+                    style="background:rgba(248,113,113,0.12);color:var(--red)">Multi-Channel</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🤖</div>
+                <h3>Orchestrator</h3>
+                <div class="agent-role-text">Pipeline Controller</div>
+                <p>Manages the autonomous pipeline — schedules scans, coordinates agent handoffs, and ensures complete
+                    cycle execution.</p>
+                <span class="model-badge" style="background:rgba(167,139,250,0.12);color:var(--purple)">OpenClaw</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section" id="how-it-works">
+        <div class="section-label">Autonomous Pipeline</div>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-desc">
+            Every 5 minutes, our agents execute an autonomous cycle — scan, detect, analyze, advise, and alert — with
+            zero human input.
+        </p>
+
+        <div class="flow-container">
+            <div class="flow-step">
+                <span class="flow-icon">📡</span>
+                <span class="flow-label">Monitor</span>
+                <span class="flow-sub">Scan live data</span>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-icon">🔍</span>
+                <span class="flow-label">Detect</span>
+                <span class="flow-sub">Check thresholds</span>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-icon">🧠</span>
+                <span class="flow-label">Analyze</span>
+                <span class="flow-sub">Z.AI reasoning</span>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-icon">💚</span>
+                <span class="flow-label">Advise</span>
+                <span class="flow-sub">FLock open-source</span>
+            </div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">
+                <span class="flow-icon">🔔</span>
+                <span class="flow-label">Alert</span>
+                <span class="flow-sub">Push everywhere</span>
+            </div>
+        </div>
+
+        <!-- SDG 13 Banner -->
+        <div class="sdg-banner">
+            <span class="sdg-icon">🌍</span>
+            <div class="sdg-text">
+                <h3>SDG 13: Climate Action</h3>
+                <p>GreenClaw directly addresses UN Sustainable Development Goal 13 by providing autonomous climate
+                    monitoring, early warning systems, and actionable sustainability recommendations to communities
+                    worldwide.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo CTA -->
+    <section class="section">
+        <div class="demo-section">
+            <h2>Watch the Agents Work</h2>
+            <p>
+                Open the live dashboard and watch our agents autonomously scan cities,
+                detect risks, reason with Z.AI, and push alerts — in real time.
+            </p>
+            <a href="/dashboard" class="btn-primary">🚀 Open Live Dashboard</a>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="section" id="tech">
+        <div class="section-label">Built With</div>
+        <h2 class="section-title">Technology Stack</h2>
+        <p class="section-desc">
+            Production-grade AI infrastructure combining proprietary and open-source models.
+        </p>
+
+        <div class="tech-grid">
+            <div class="tech-card">
+                <span class="tech-icon">🦞</span>
+                <span class="tech-name">OpenClaw</span>
+                <span class="tech-use">Agent Framework</span>
+            </div>
+            <div class="tech-card">
+                <span class="tech-icon">🧠</span>
+                <span class="tech-name">Z.AI GLM-4-Plus</span>
+                <span class="tech-use">Risk Reasoning Engine</span>
+            </div>
+            <div class="tech-card">
+                <span class="tech-icon">💚</span>
+                <span class="tech-name">FLock.io</span>
+                <span class="tech-use">Open-Source Inference</span>
+            </div>
+            <div class="tech-card">
+                <span class="tech-icon">⚡</span>
+                <span class="tech-name">FastAPI</span>
+                <span class="tech-use">Backend Server</span>
+            </div>
+            <div class="tech-card">
+                <span class="tech-icon">📱</span>
+                <span class="tech-name">Telegram Bot</span>
+                <span class="tech-use">Multi-Channel Deploy</span>
+            </div>
+            <div class="tech-card">
+                <span class="tech-icon">🌡️</span>
+                <span class="tech-name">Live APIs</span>
+                <span class="tech-use">Weather + AQI + NASA</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            GreenClaw — Autonomous Climate Operations Center<br>
+            Built for <a href="#">UK AI Agent Hackathon EP4</a> · Powered by
+            <a href="https://z.ai">Z.AI</a>,
+            <a href="https://flock.io">FLock.io</a>,
+            <a href="https://openclaw.org">OpenClaw</a>
+        </p>
+    </footer>
+</body>
+
+</html>
