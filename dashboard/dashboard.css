@@ -538,6 +538,12 @@ body.kids-theme .bg-gradient {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--gap);
+    align-items: stretch;
+}
+
+/* Rows with exactly 2 cards */
+.dashboard-row:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .dashboard-row:has(.card-full-width) {
@@ -592,6 +598,8 @@ body.kids-theme .bg-gradient {
     overflow: hidden;
     transition: var(--transition);
     animation: cardEnter 0.6s ease-out both;
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
@@ -667,6 +675,7 @@ body.kids-theme .bg-gradient {
 
 .card-body {
     padding: 18px;
+    flex: 1;
 }
 
 .card-header-right {
@@ -2083,7 +2092,8 @@ body.kids-theme .bg-gradient {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-width: 400px;
+    max-width: 320px;
+    pointer-events: auto;
 }
 
 .alert-toast {
