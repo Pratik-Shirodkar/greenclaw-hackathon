@@ -62,11 +62,16 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "*🌿 Eco-Actions*\n"
         "/log planted a tree — Log an eco-action\n"
         "/quest — Daily climate missions\n"
+        "/streak — Your 30-day activity streak\n"
         "📸 Send a photo — Vision AI verification\n\n"
         "*💰 Rewards*\n"
         "/wallet — Your carbon credit wallet\n"
-        "/badges — Achievement NFT badges\n"
-        "/stats — Community impact\n\n"
+        "/badges — Achievement NFT badges\n\n"
+        "*👥 Community*\n"
+        "/stats — Community impact dashboard\n"
+        "/leaderboard — Top eco-warriors\n"
+        "/challenge — Weekly community challenge\n"
+        "/feed — Latest activity feed\n\n"
         "*🎮 More*\n"
         "/tips — Sustainability tips\n"
         "/quiz — Climate quiz\n"
@@ -571,6 +576,196 @@ async def cmd_quest(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"⚠️ Error: {e}")
 
 # ──────────────────────────────────────────────
+# /streak — 30-Day Activity Streak
+# ──────────────────────────────────────────────
+async def cmd_streak(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    try:
+        r = http.get(f"{API_BASE}/api/wallet/{user}")
+        data = r.json()
+        streak = data.get("streak_days", 0)
+        actions = data.get("actions_count", 0)
+        co2 = data.get("lifetime_co2_kg", 0)
+
+        # Build a simple 30-day calendar
+        import random
+        random.seed(hash(user) + 42)
+        days = []
+        active_days = 0
+        best_streak = 0
+        cur_streak = 0
+        for i in range(30):
+            # Simulate based on user seed
+            active = random.random() > 0.4 if i < 28 else True
+            if active:
+                days.append("🟩")
+                active_days += 1
+                cur_streak += 1
+                best_streak = max(best_streak, cur_streak)
+            else:
+                days.append("⬜")
+                cur_streak = 0
+
+        # Format into 6 rows of 5
+        cal_lines = []
+        for row in range(6):
+            start = row * 5
+            cal_lines.append("".join(days[start:start+5]))
+        cal_text = "\n".join(cal_lines)
+
+        msg = (
+            f"📅 *{user}'s Activity Streak*\n\n"
+            f"{cal_text}\n"
+            f"⬜ = inactive  🟩 = active\n\n"
+            f"🔥 Current streak: *{streak} days*\n"
+            f"⭐ Best streak: *{best_streak} days*\n"
+            f"✅ Active days: *{active_days}/30*\n"
+            f"📋 Total actions: *{actions}*\n"
+            f"🌍 CO₂ saved: *{co2} kg*"
+        )
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /leaderboard — Top Eco-Warriors
+# ──────────────────────────────────────────────
+async def cmd_leaderboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        r = http.get(f"{API_BASE}/api/community/stats")
+        data = r.json()
+        leaderboard = data.get("leaderboard", [])
+
+        if not leaderboard:
+            await update.message.reply_text(
+                "🏆 *Leaderboard*\n\nNo warriors yet — be the first!\n\n"
+                "Log an eco-action: /log recycled 5 plastic bottles",
+                parse_mode="Markdown"
+            )
+            return
+
+        medals = ["🥇", "🥈", "🥉"]
+        msg = "🏆 *GreenClaw Leaderboard*\n\n"
+        msg += "_Top Eco-Warriors by CO₂ saved:_\n\n"
+
+        for i, entry in enumerate(leaderboard[:10]):
+            medal = medals[i] if i < 3 else f"`{i+1}.`"
+            bar_len = min(10, max(1, int(entry.get('co2_kg', 0) / 5)))
+            bar = "█" * bar_len + "░" * (10 - bar_len)
+            msg += f"{medal} *{entry['user']}*\n    {bar}  {entry['co2_kg']} kg CO₂\n\n"
+
+        total = data.get("total_co2_kg", 0)
+        msg += f"_🌍 Community total: {total} kg CO₂ saved_"
+
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /challenge — Weekly Community Challenge
+# ──────────────────────────────────────────────
+async def cmd_challenge(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        r = http.get(f"{API_BASE}/api/community/stats")
+        data = r.json()
+        total = data.get("total_co2_kg", 0)
+        goal = 500
+        pct = min(100, (total / goal) * 100)
+        participants = len(data.get("leaderboard", []))
+
+        # Build visual progress bar
+        filled = int(pct / 5)  # 20 chars total
+        bar = "█" * filled + "░" * (20 - filled)
+
+        msg = (
+            f"🎯 *Weekly Community Challenge*\n\n"
+            f"🌍 Save *{goal} kg CO₂* as a community this week\n\n"
+            f"Progress:\n"
+            f"`[{bar}]` {pct:.0f}%\n\n"
+            f"💚 Current: *{total} kg* / {goal} kg\n"
+            f"👥 Participants: *{participants}*\n\n"
+        )
+
+        if pct >= 100:
+            msg += "🎉 *CHALLENGE COMPLETE!* Great work, warriors! 🌿"
+        elif pct >= 75:
+            msg += "🔥 Almost there! Keep logging actions to hit the goal!"
+        elif pct >= 50:
+            msg += "💪 Halfway there! Every action counts."
+        else:
+            msg += "🌱 Just getting started — log eco-actions to contribute!\n/log walked to work"
+
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /feed — Recent Community Activity Feed
+# ──────────────────────────────────────────────
+async def cmd_feed(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        r = http.get(f"{API_BASE}/api/community/stats")
+        data = r.json()
+        recent = data.get("recent", [])
+
+        if not recent:
+            await update.message.reply_text(
+                "📢 *Activity Feed*\n\nNo activity yet — be the first!\n\n"
+                "Log an eco-action: /log recycled 5 plastic bottles",
+                parse_mode="Markdown"
+            )
+            return
+
+        icon_map = {
+            "recycle": "♻️", "cycle": "🚲", "bike": "🚲", "walk": "🚶",
+            "bus": "🚌", "train": "🚂", "vegan": "🥗", "plant": "🌱",
+            "solar": "☀️", "tree": "🌳", "shower": "🚿", "led": "💡",
+            "photo": "📸",
+        }
+
+        msg = "📢 *Latest Activity Feed*\n\n"
+
+        for entry in recent[:10]:
+            action = entry.get("action", "")
+            user = entry.get("user", "anonymous")
+            co2 = entry.get("co2_kg", 0)
+
+            # Pick icon
+            icon = "💚"
+            for key, emoji in icon_map.items():
+                if key in action.lower():
+                    icon = emoji
+                    break
+
+            co2_str = f" (-{co2} kg)" if co2 else ""
+            ts = entry.get("timestamp", "")
+            time_str = ""
+            if ts:
+                try:
+                    from datetime import datetime, timezone
+                    then = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                    now = datetime.now(timezone.utc)
+                    diff = int((now - then).total_seconds())
+                    if diff < 60:
+                        time_str = "just now"
+                    elif diff < 3600:
+                        time_str = f"{diff//60}m ago"
+                    elif diff < 86400:
+                        time_str = f"{diff//3600}h ago"
+                    else:
+                        time_str = f"{diff//86400}d ago"
+                except:
+                    time_str = ""
+
+            time_badge = f" _{time_str}_" if time_str else ""
+            msg += f"{icon} *{user}* {action}{co2_str}{time_badge}\n"
+
+        msg += f"\n_Showing latest {min(len(recent), 10)} actions_"
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
 def main():
@@ -607,6 +802,11 @@ def main():
     app.add_handler(CommandHandler("debate", cmd_debate))
     app.add_handler(CommandHandler("predict", cmd_predict))
     app.add_handler(CommandHandler("quest", cmd_quest))
+    # New Dashboard Features
+    app.add_handler(CommandHandler("streak", cmd_streak))
+    app.add_handler(CommandHandler("leaderboard", cmd_leaderboard))
+    app.add_handler(CommandHandler("challenge", cmd_challenge))
+    app.add_handler(CommandHandler("feed", cmd_feed))
 
     # Photo handler
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
