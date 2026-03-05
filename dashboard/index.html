@@ -407,6 +407,113 @@
                 </div>
             </div>
         </section>
+
+        <!-- Row 4: Carbon Wallet + Trophy Case + Quest Board -->
+        <section class="dashboard-row">
+            <!-- Carbon Credit Wallet -->
+            <div class="card card-wallet" id="walletCard">
+                <div class="card-header">
+                    <h2>🪙 Carbon Wallet</h2>
+                    <span class="card-badge badge-wallet">$GREEN</span>
+                </div>
+                <div class="card-body">
+                    <div class="wallet-hero">
+                        <div class="wallet-rank-icon" id="walletRankIcon">🌱</div>
+                        <div class="wallet-rank-name" id="walletRankName">Seedling</div>
+                    </div>
+                    <div class="wallet-balance">
+                        <span class="wallet-amount" id="walletCredits">0</span>
+                        <span class="wallet-currency">$GREEN</span>
+                    </div>
+                    <div class="wallet-stats-grid">
+                        <div class="wallet-stat">
+                            <span class="wallet-stat-value" id="walletCO2">0</span>
+                            <span class="wallet-stat-label">kg CO₂ saved</span>
+                        </div>
+                        <div class="wallet-stat">
+                            <span class="wallet-stat-value" id="walletStreak">0</span>
+                            <span class="wallet-stat-label">day streak 🔥</span>
+                        </div>
+                        <div class="wallet-stat">
+                            <span class="wallet-stat-value" id="walletActions">0</span>
+                            <span class="wallet-stat-label">actions</span>
+                        </div>
+                    </div>
+                    <div class="wallet-progress">
+                        <div class="progress-label">
+                            <span>Next rank:</span>
+                            <span id="walletNextRank">🌿 Sprout</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="walletProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-remaining" id="walletRemaining">25 credits to go</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trophy Case (Badges) -->
+            <div class="card card-trophies" id="trophyCard">
+                <div class="card-header">
+                    <h2>🏅 Trophy Case</h2>
+                    <span class="card-badge badge-nft">NFT Badges</span>
+                </div>
+                <div class="card-body">
+                    <div class="trophy-grid" id="trophyGrid">
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">🌱</div>
+                            <div class="trophy-name">Genesis Green</div>
+                            <div class="trophy-desc">First eco-action</div>
+                        </div>
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">🌿</div>
+                            <div class="trophy-name">Half Century</div>
+                            <div class="trophy-desc">50 kg CO₂</div>
+                        </div>
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">🌳</div>
+                            <div class="trophy-name">Centurion</div>
+                            <div class="trophy-desc">100 kg CO₂</div>
+                        </div>
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">📸</div>
+                            <div class="trophy-name">Proof of Green</div>
+                            <div class="trophy-desc">Vision AI verified</div>
+                        </div>
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">🔥</div>
+                            <div class="trophy-name">Streak Master</div>
+                            <div class="trophy-desc">7-day streak</div>
+                        </div>
+                        <div class="trophy-item trophy-locked">
+                            <div class="trophy-icon">🌍</div>
+                            <div class="trophy-name">Guardian</div>
+                            <div class="trophy-desc">500 kg CO₂</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quest Board -->
+            <div class="card card-quests" id="questCard">
+                <div class="card-header">
+                    <h2>🎮 Daily Quests</h2>
+                    <span class="card-badge badge-quest">XP System</span>
+                </div>
+                <div class="card-body">
+                    <div class="quest-hero">
+                        <span class="quest-level-icon" id="questLevelIcon">🥚</span>
+                        <span class="quest-level-name" id="questLevelName">Hatchling</span>
+                        <span class="quest-xp" id="questXP">0 XP</span>
+                    </div>
+                    <div class="quest-list" id="questList">
+                        <div class="quest-item">
+                            <span class="quest-title">Loading quests...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->

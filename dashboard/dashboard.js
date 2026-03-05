@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initTipDots();
     loadRandomFact();
     pollAlerts();
+    loadWallet();
+    loadBadges();
+    loadQuests();
 
     document.getElementById('citySearch').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') loadCityData();
@@ -741,3 +744,148 @@ function animateNumber(elementId, target, decimals) {
     }
     requestAnimationFrame(update);
 }
+
+// ============================================
+// Carbon Wallet (Live)
+// ============================================
+const WALLET_USER = 'demo_user';
+
+async function loadWallet() {
+    try {
+        const r = await fetch(`${API_BASE}/api/wallet/${WALLET_USER}`);
+        const data = await r.json();
+        document.getElementById('walletRankIcon').textContent = data.rank_icon || '🌱';
+        document.getElementById('walletRankName').textContent = data.rank_name || 'Seedling';
+        document.getElementById('walletCredits').textContent = data.credits || 0;
+        document.getElementById('walletCO2').textContent = data.lifetime_co2_kg || 0;
+        document.getElementById('walletStreak').textContent = data.streak_days || 0;
+        document.getElementById('walletActions').textContent = data.actions_count || 0;
+
+        if (data.next_rank) {
+            document.getElementById('walletNextRank').textContent = `${data.next_rank.icon} ${data.next_rank.name}`;
+            const pct = Math.min(100, ((data.credits / data.next_rank.threshold) * 100));
+            document.getElementById('walletProgressBar').style.width = `${pct}%`;
+            document.getElementById('walletRemaining').textContent = `${data.next_rank.remaining} credits to go`;
+        } else {
+            document.getElementById('walletNextRank').textContent = '🦞 MAX RANK!';
+            document.getElementById('walletProgressBar').style.width = '100%';
+            document.getElementById('walletRemaining').textContent = 'You are a legend!';
+        }
+    } catch (e) {
+        console.error('Wallet load error:', e);
+    }
+}
+
+// ============================================
+// Trophy Case (Badges)
+// ============================================
+const BADGE_MAP = {
+    genesis: { icon: '🌱', name: 'Genesis Green', desc: 'First eco-action' },
+    halfcentury: { icon: '🌿', name: 'Half Century', desc: '50 kg CO₂' },
+    centurion: { icon: '🌳', name: 'Centurion', desc: '100 kg CO₂' },
+    photo_proof: { icon: '📸', name: 'Proof of Green', desc: 'Vision AI verified' },
+    streak7: { icon: '🔥', name: 'Streak Master', desc: '7-day streak' },
+    guardian: { icon: '🌍', name: 'Guardian', desc: '500 kg CO₂' },
+    streak30: { icon: '💎', name: 'Streak Legend', desc: '30-day streak' },
+    legend: { icon: '🦞', name: 'GreenClaw Legend', desc: '1000 kg CO₂' },
+};
+
+async function loadBadges() {
+    try {
+        const r = await fetch(`${API_BASE}/api/badges/${WALLET_USER}`);
+        const data = await r.json();
+        const earned = new Set(data.badges.map(b => b.id));
+        const grid = document.getElementById('trophyGrid');
+        grid.innerHTML = '';
+
+        for (const [id, info] of Object.entries(BADGE_MAP)) {
+            const isEarned = earned.has(id);
+            const badge = data.badges.find(b => b.id === id);
+            const el = document.createElement('div');
+            el.className = `trophy-item ${isEarned ? 'trophy-earned' : 'trophy-locked'}`;
+            el.innerHTML = `
+                <div class="trophy-icon">${info.icon}</div>
+                <div class="trophy-name">${info.name}</div>
+                <div class="trophy-desc">${isEarned && badge ? badge.token_id.slice(-8) : info.desc}</div>
+            `;
+            if (isEarned) el.title = `Token: ${badge.token_id}`;
+            grid.appendChild(el);
+        }
+    } catch (e) {
+        console.error('Badges load error:', e);
+    }
+}
+
+// ============================================
+// Quest Board (Daily)
+// ============================================
+async function loadQuests() {
+    try {
+        const r = await fetch(`${API_BASE}/api/quests`);
+        const data = await r.json();
+        const list = document.getElementById('questList');
+
+        // Also load profile
+        let profile = { total_xp: 0, level_name: '🥚 Hatchling' };
+        try {
+            const r2 = await fetch(`${API_BASE}/api/quest/profile/${WALLET_USER}`);
+            profile = await r2.json();
+        } catch (e) { }
+
+        const parts = (profile.level_name || '🥚 Hatchling').split(' ');
+        document.getElementById('questLevelIcon').textContent = parts[0];
+        document.getElementById('questLevelName').textContent = parts.slice(1).join(' ');
+        document.getElementById('questXP').textContent = `${profile.total_xp || 0} XP`;
+
+        list.innerHTML = '';
+        for (const q of data.quests) {
+            const el = document.createElement('div');
+            el.className = 'quest-item';
+            el.id = `quest-${q.id}`;
+            el.innerHTML = `
+                <span class="quest-title">${q.title}</span>
+                <span class="quest-xp-badge">⭐${q.xp} XP</span>
+                <button class="quest-complete-btn" onclick="completeQuest(${q.id})">Done ✓</button>
+            `;
+            list.appendChild(el);
+        }
+    } catch (e) {
+        console.error('Quests load error:', e);
+    }
+}
+
+async function completeQuest(questId) {
+    try {
+        const r = await fetch(`${API_BASE}/api/quest/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: WALLET_USER, quest_id: questId }),
+        });
+        const data = await r.json();
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // Mark quest as done
+        const el = document.getElementById(`quest-${questId}`);
+        if (el) {
+            el.classList.add('quest-done');
+            el.querySelector('.quest-complete-btn').textContent = '✅';
+            el.querySelector('.quest-complete-btn').disabled = true;
+        }
+
+        // Refresh wallet and badges
+        loadWallet();
+        loadBadges();
+
+        // Update quest profile display
+        const parts = (data.level_name || '🥚 Hatchling').split(' ');
+        document.getElementById('questLevelIcon').textContent = parts[0];
+        document.getElementById('questLevelName').textContent = parts.slice(1).join(' ');
+        document.getElementById('questXP').textContent = `${data.total_xp || 0} XP`;
+    } catch (e) {
+        console.error('Quest complete error:', e);
+    }
+}
+

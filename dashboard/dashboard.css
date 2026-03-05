@@ -2138,3 +2138,320 @@ body.kids-theme .bg-gradient {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ============================================
+   CARBON WALLET CARD
+   ============================================ */
+.card-wallet {
+    background: linear-gradient(145deg, rgba(74, 222, 128, 0.08), rgba(17, 24, 39, 0.85));
+    border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.badge-wallet {
+    background: rgba(74, 222, 128, 0.2) !important;
+    color: var(--accent-green) !important;
+    border-color: rgba(74, 222, 128, 0.4) !important;
+    font-weight: 700;
+}
+
+.wallet-hero {
+    text-align: center;
+    padding: 12px 0 8px;
+}
+
+.wallet-rank-icon {
+    font-size: 3rem;
+    animation: walletPulse 2s ease-in-out infinite;
+}
+
+@keyframes walletPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.wallet-rank-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-top: 4px;
+}
+
+.wallet-balance {
+    text-align: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin: 10px 0;
+}
+
+.wallet-amount {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.wallet-currency {
+    font-size: 1rem;
+    color: var(--accent-green);
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.wallet-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.wallet-stat {
+    text-align: center;
+    padding: 8px 4px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--glass-border);
+}
+
+.wallet-stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.wallet-stat-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wallet-progress {
+    margin-top: 8px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.progress-bar-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--gradient-green);
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-remaining {
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+/* ============================================
+   TROPHY CASE CARD
+   ============================================ */
+.card-trophies {
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.06), rgba(17, 24, 39, 0.85));
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.badge-nft {
+    background: rgba(251, 191, 36, 0.2) !important;
+    color: var(--accent-yellow) !important;
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    font-weight: 700;
+}
+
+.trophy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.trophy-item {
+    text-align: center;
+    padding: 12px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.trophy-item.trophy-locked {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+}
+
+.trophy-item.trophy-earned {
+    opacity: 1;
+    filter: none;
+    border-color: rgba(251, 191, 36, 0.5);
+    background: rgba(251, 191, 36, 0.08);
+    animation: trophyShine 3s ease-in-out infinite;
+}
+
+@keyframes trophyShine {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 rgba(251, 191, 36, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+    }
+}
+
+.trophy-item.trophy-earned::after {
+    content: '✓';
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    font-size: 0.6rem;
+    color: var(--accent-green);
+    font-weight: 900;
+}
+
+.trophy-icon {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+}
+
+.trophy-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.trophy-desc {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ============================================
+   QUEST BOARD CARD
+   ============================================ */
+.card-quests {
+    background: linear-gradient(145deg, rgba(167, 139, 250, 0.06), rgba(17, 24, 39, 0.85));
+    border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.badge-quest {
+    background: rgba(167, 139, 250, 0.2) !important;
+    color: var(--accent-purple) !important;
+    border-color: rgba(167, 139, 250, 0.4) !important;
+    font-weight: 700;
+}
+
+.quest-hero {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    margin-bottom: 12px;
+}
+
+.quest-level-icon {
+    font-size: 1.8rem;
+}
+
+.quest-level-name {
+    font-weight: 700;
+    color: var(--accent-purple);
+    flex: 1;
+}
+
+.quest-xp {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    font-size: 0.9rem;
+}
+
+.quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quest-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s ease;
+}
+
+.quest-item:hover {
+    border-color: rgba(167, 139, 250, 0.3);
+    background: rgba(167, 139, 250, 0.05);
+}
+
+.quest-item.quest-done {
+    opacity: 0.5;
+    text-decoration: line-through;
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.quest-title {
+    flex: 1;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.quest-xp-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--accent-purple);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.quest-complete-btn {
+    padding: 4px 10px;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--accent-green);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.quest-complete-btn:hover {
+    background: rgba(74, 222, 128, 0.25);
+    border-color: rgba(74, 222, 128, 0.5);
+}
