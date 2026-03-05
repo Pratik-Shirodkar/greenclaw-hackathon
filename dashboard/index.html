@@ -33,499 +33,480 @@
             </div>
         </div>
         <div class="header-center">
-            <div class="status-badge live-badge">
-                <span class="pulse-dot"></span>
-                <span>LIVE</span>
-            </div>
-            <!-- Kids Mode Toggle -->
-            <button class="kids-mode-toggle" id="kidsModeToggle" onclick="toggleKidsMode()">
-                <span class="kids-mode-icon">🎮</span>
-                <span class="kids-mode-text">Kids Mode: OFF</span>
-            </button>
-            <div class="status-badge">
-                <span>🤖 Powered by Z.AI GLM + FLock.io</span>
-            </div>
-            <div class="status-badge">
-                <span>🦞 Built on OpenClaw</span>
-            </div>
+            <nav class="tab-nav" id="tabNav">
+                <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">
+                    <span class="tab-icon">🏠</span>
+                    <span class="tab-label">Home</span>
+                </button>
+                <button class="tab-btn" data-tab="intelligence" onclick="switchTab('intelligence')">
+                    <span class="tab-icon">🌍</span>
+                    <span class="tab-label">Intelligence</span>
+                </button>
+                <button class="tab-btn" data-tab="community" onclick="switchTab('community')">
+                    <span class="tab-icon">👥</span>
+                    <span class="tab-label">Community</span>
+                </button>
+            </nav>
         </div>
         <div class="header-right">
-            <div class="search-box">
-                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" id="citySearch" placeholder="Search city..." value="London">
-                <button class="search-btn" id="searchBtn" onclick="loadCityData()">Go</button>
+            <div class="header-badges">
+                <span class="header-pill">🤖 Z.AI + FLock.io</span>
+                <span class="header-pill">🦞 OpenClaw</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Dashboard Grid -->
+    <!-- Main Dashboard with Tabs -->
     <main class="dashboard">
-        <!-- Global Threat Map (3D Globe) -->
-        <section class="dashboard-row">
-            <div class="card card-full-width globe-card" id="globeCard">
-                <div class="card-header globe-header">
-                    <h2>🌍 Global Threat Map</h2>
-                    <span class="card-badge pulse-badge"
-                        style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4);">LIVE
-                        SATELLITE</span>
-                </div>
-                <div id="globeViz" class="globe-container"></div>
-            </div>
-        </section>
 
-        <!-- Row 1: Weather + AQI + Disasters -->
-        <section class="dashboard-row">
-            <!-- Weather Card -->
-            <div class="card card-weather" id="weatherCard">
-                <div class="card-header">
-                    <h2>🌡️ Climate Monitor</h2>
-                    <span class="card-badge">Real-time</span>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 1: HOME — Your Profile & Rewards       -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-content active" id="tab-home">
+            <!-- Welcome Hero -->
+            <section class="home-hero">
+                <div class="hero-greeting">
+                    <h2>Welcome back <span id="heroUsername">Eco-Warrior</span> 👋</h2>
+                    <p>Track your climate actions, earn $GREEN credits, and collect on-chain NFT badges.</p>
                 </div>
-                <div class="card-body">
-                    <div class="weather-main">
-                        <span class="weather-icon" id="weatherIcon">☁️</span>
-                        <div class="weather-temp">
-                            <span class="temp-value" id="tempValue">--</span>
-                            <span class="temp-unit">°C</span>
-                        </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" id="heroCredits">0</span>
+                        <span class="hero-stat-label">$GREEN Credits</span>
                     </div>
-                    <div class="weather-city" id="weatherCity">Loading...</div>
-                    <div class="weather-condition" id="weatherCondition">--</div>
-                    <div class="weather-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Feels Like</span>
-                            <span class="detail-value" id="feelsLike">--°C</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Humidity</span>
-                            <span class="detail-value" id="humidity">--%</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Wind</span>
-                            <span class="detail-value" id="wind">-- m/s</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Pressure</span>
-                            <span class="detail-value" id="pressure">-- hPa</span>
-                        </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" id="heroBadges">0</span>
+                        <span class="hero-stat-label">NFT Badges</span>
                     </div>
-                    <!-- Forecast -->
-                    <div class="forecast-strip" id="forecastStrip">
-                        <!-- Dynamically filled -->
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" id="heroStreak">0</span>
+                        <span class="hero-stat-label">Day Streak 🔥</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- AQI Card -->
-            <div class="card card-aqi" id="aqiCard">
-                <div class="card-header">
-                    <h2>💨 Air Quality</h2>
-                    <span class="card-badge" id="aqiCategory">--</span>
-                </div>
-                <div class="card-body">
-                    <div class="aqi-gauge">
-                        <svg class="aqi-ring" viewBox="0 0 120 120">
-                            <circle class="aqi-ring-bg" cx="60" cy="60" r="52" />
-                            <circle class="aqi-ring-fill" id="aqiRingFill" cx="60" cy="60" r="52" />
-                        </svg>
-                        <div class="aqi-value-wrapper">
-                            <span class="aqi-value" id="aqiValue">--</span>
-                            <span class="aqi-label">AQI</span>
+            <!-- Wallet + Badges Row -->
+            <section class="dashboard-row">
+                <!-- Carbon Credit Wallet -->
+                <div class="card card-wallet" id="walletCard">
+                    <div class="card-header">
+                        <h2>🪙 Carbon Wallet</h2>
+                        <span class="card-badge badge-wallet">$GREEN</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="wallet-hero">
+                            <div class="wallet-rank-icon" id="walletRankIcon">🌱</div>
+                            <div class="wallet-rank-name" id="walletRankName">Seedling</div>
                         </div>
-                    </div>
-                    <div class="aqi-icon-large" id="aqiIcon">🟢</div>
-                    <div class="aqi-advice" id="aqiAdvice">Loading air quality data...</div>
-                    <div class="pollutant-grid" id="pollutantGrid">
-                        <!-- Dynamically filled -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Disasters Card -->
-            <div class="card card-disasters" id="disasterCard">
-                <div class="card-header">
-                    <h2>🌪️ Active Disasters</h2>
-                    <span class="card-badge" id="disasterCount">--</span>
-                </div>
-                <div class="card-body">
-                    <div class="disaster-list" id="disasterList">
-                        <div class="loading-spinner">
-                            <div class="spinner"></div>
-                            <span>Scanning NASA EONET...</span>
+                        <div class="wallet-balance">
+                            <span class="wallet-amount" id="walletCredits">0</span>
+                            <span class="wallet-currency">$GREEN</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Row 2: Z.AI Risk Analysis (FULL WIDTH SHOWCASE) -->
-        <section class="dashboard-row">
-            <div class="card card-risk card-full-width" id="riskCard">
-                <div class="card-header">
-                    <h2>⚠️ AI Risk Analysis</h2>
-                    <div class="card-header-right">
-                        <span class="card-badge badge-zai">🧠 Z.AI GLM-4.5 Thinking Mode</span>
-                        <button class="analyze-btn" id="analyzeBtn" onclick="runRiskAnalysis()">
-                            <span class="btn-icon">⚡</span> Run Analysis
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body risk-body">
-                    <div class="risk-left">
-                        <div class="risk-score-display">
-                            <div class="risk-score-circle" id="riskScoreCircle">
-                                <span class="risk-score-number" id="riskScoreNumber">--</span>
-                                <span class="risk-score-label">Risk Score</span>
+                        <div class="wallet-stats-grid">
+                            <div class="wallet-stat">
+                                <span class="wallet-stat-value" id="walletCO2">0</span>
+                                <span class="wallet-stat-label">kg CO₂ saved</span>
                             </div>
-                            <div class="risk-level-text" id="riskLevelText">
-                                Click "Run Analysis" to begin
+                            <div class="wallet-stat">
+                                <span class="wallet-stat-value" id="walletStreak">0</span>
+                                <span class="wallet-stat-label">day streak 🔥</span>
+                            </div>
+                            <div class="wallet-stat">
+                                <span class="wallet-stat-value" id="walletActions">0</span>
+                                <span class="wallet-stat-label">actions</span>
                             </div>
                         </div>
-                        <div class="risk-categories" id="riskCategories">
-                            <!-- Dynamically filled -->
+                        <div class="wallet-progress">
+                            <div class="progress-label">
+                                <span>Next rank:</span>
+                                <span id="walletNextRank">🌿 Sprout</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="walletProgressBar" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-remaining" id="walletRemaining">25 credits to go</div>
+                        </div>
+                        <div class="wallet-connect" id="walletConnectSection">
+                            <div class="wallet-connect-label">🔗 Link your wallet for on-chain NFTs:</div>
+                            <div class="wallet-connect-row">
+                                <input type="text" id="walletAddressInput" placeholder="0x..."
+                                    class="wallet-address-input" maxlength="42">
+                                <button class="wallet-connect-btn" onclick="connectWallet()">Connect</button>
+                            </div>
+                            <div class="wallet-connected-info" id="walletConnectedInfo" style="display:none">
+                                <span class="wallet-connected-dot">●</span>
+                                <span id="walletLinkedAddress"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="risk-right">
-                        <div class="thinking-panel" id="thinkingPanel">
-                            <div class="thinking-header">
-                                <span class="thinking-icon">🧠</span>
-                                <span>Z.AI GLM Reasoning Chain</span>
-                                <span class="thinking-status" id="thinkingStatus">Idle</span>
+                </div>
+
+                <!-- Trophy Case (Badges) -->
+                <div class="card card-trophies" id="trophyCard">
+                    <div class="card-header">
+                        <h2>🏅 Trophy Case</h2>
+                        <span class="card-badge badge-nft">On-Chain NFTs</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="trophy-grid" id="trophyGrid">
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">🌱</div>
+                                <div class="trophy-name">Genesis Green</div>
+                                <div class="trophy-desc">First eco-action</div>
                             </div>
-                            <div class="thinking-content" id="thinkingContent">
-                                <div class="thinking-placeholder">
-                                    AI reasoning will appear here when analysis runs...
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">🌿</div>
+                                <div class="trophy-name">Half Century</div>
+                                <div class="trophy-desc">50 kg CO₂</div>
+                            </div>
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">🌳</div>
+                                <div class="trophy-name">Centurion</div>
+                                <div class="trophy-desc">100 kg CO₂</div>
+                            </div>
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">📸</div>
+                                <div class="trophy-name">Proof of Green</div>
+                                <div class="trophy-desc">Vision AI verified</div>
+                            </div>
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">🔥</div>
+                                <div class="trophy-name">Streak Master</div>
+                                <div class="trophy-desc">7-day streak</div>
+                            </div>
+                            <div class="trophy-item trophy-locked">
+                                <div class="trophy-icon">🌍</div>
+                                <div class="trophy-name">Guardian</div>
+                                <div class="trophy-desc">500 kg CO₂</div>
+                            </div>
+                        </div>
+                        <div class="nft-contract-info">
+                            <span class="nft-chain-badge">⟠ Ethereum Sepolia</span>
+                            <span class="nft-contract-addr" title="0xc5E6377C1B700B2dE1eb329d8B9180c89F7D66B1">GCLAW
+                                Contract</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quests + Log Action Row -->
+            <section class="dashboard-row">
+                <!-- Quest Board -->
+                <div class="card card-quests" id="questCard">
+                    <div class="card-header">
+                        <h2>🎯 Daily Quests</h2>
+                        <span class="card-badge badge-quest">XP System</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="quest-hero">
+                            <span class="quest-level-icon" id="questLevelIcon">🥚</span>
+                            <span class="quest-level-name" id="questLevelName">Hatchling</span>
+                            <span class="quest-xp" id="questXP">0 XP</span>
+                        </div>
+                        <div class="quest-list" id="questList">
+                            <div class="quest-item"><span class="quest-title">Loading quests...</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Logger -->
+                <div class="card card-community" id="quickLogCard">
+                    <div class="card-header">
+                        <h2>📸 Log Eco-Action</h2>
+                        <span class="card-badge">AI Verified</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="log-input-row">
+                            <input type="text" id="actionInput" placeholder="What eco-action did you do today?"
+                                class="action-input">
+                            <button class="log-btn" onclick="logAction()">Log ✓</button>
+                        </div>
+                        <div class="action-log">
+                            <h3>Recent Actions</h3>
+                            <div class="log-list" id="actionLog">
+                                <div class="log-item"><span class="log-icon">♻️</span><span>Recycled 5 plastic
+                                        bottles</span><span class="log-co2">-2.5 kg</span></div>
+                                <div class="log-item"><span class="log-icon">🚲</span><span>Cycled to work</span><span
+                                        class="log-co2">-2.3 kg</span></div>
+                                <div class="log-item"><span class="log-icon">🥗</span><span>Plant-based
+                                        lunch</span><span class="log-co2">-2.5 kg</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 2: INTELLIGENCE — Climate Monitoring    -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-intelligence">
+            <!-- City Search Bar -->
+            <section class="intel-search">
+                <div class="search-box search-box-large">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" id="citySearch" placeholder="Search city for climate data..." value="London">
+                    <button class="search-btn" id="searchBtn" onclick="loadCityData()">Analyze</button>
+                </div>
+            </section>
+
+            <!-- Globe -->
+            <section class="dashboard-row">
+                <div class="card card-full-width globe-card" id="globeCard">
+                    <div class="card-header globe-header">
+                        <h2>🌍 Global Threat Map</h2>
+                        <span class="card-badge pulse-badge"
+                            style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4);">LIVE
+                            SATELLITE</span>
+                    </div>
+                    <div id="globeViz" class="globe-container"></div>
+                </div>
+            </section>
+
+            <!-- Weather + AQI + Disasters -->
+            <section class="dashboard-row">
+                <div class="card card-weather" id="weatherCard">
+                    <div class="card-header">
+                        <h2>🌡️ Climate Monitor</h2><span class="card-badge">Real-time</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="weather-main">
+                            <span class="weather-icon" id="weatherIcon">☁️</span>
+                            <div class="weather-temp"><span class="temp-value" id="tempValue">--</span><span
+                                    class="temp-unit">°C</span></div>
+                        </div>
+                        <div class="weather-city" id="weatherCity">Loading...</div>
+                        <div class="weather-condition" id="weatherCondition">--</div>
+                        <div class="weather-details">
+                            <div class="detail-item"><span class="detail-label">Feels Like</span><span
+                                    class="detail-value" id="feelsLike">--°C</span></div>
+                            <div class="detail-item"><span class="detail-label">Humidity</span><span
+                                    class="detail-value" id="humidity">--%</span></div>
+                            <div class="detail-item"><span class="detail-label">Wind</span><span class="detail-value"
+                                    id="wind">-- m/s</span></div>
+                            <div class="detail-item"><span class="detail-label">Pressure</span><span
+                                    class="detail-value" id="pressure">-- hPa</span></div>
+                        </div>
+                        <div class="forecast-strip" id="forecastStrip"></div>
+                    </div>
+                </div>
+                <div class="card card-aqi" id="aqiCard">
+                    <div class="card-header">
+                        <h2>💨 Air Quality</h2><span class="card-badge" id="aqiCategory">--</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="aqi-gauge">
+                            <svg class="aqi-ring" viewBox="0 0 120 120">
+                                <circle class="aqi-ring-bg" cx="60" cy="60" r="52" />
+                                <circle class="aqi-ring-fill" id="aqiRingFill" cx="60" cy="60" r="52" />
+                            </svg>
+                            <div class="aqi-value-wrapper"><span class="aqi-value" id="aqiValue">--</span><span
+                                    class="aqi-label">AQI</span></div>
+                        </div>
+                        <div class="aqi-icon-large" id="aqiIcon">🟢</div>
+                        <div class="aqi-advice" id="aqiAdvice">Loading air quality data...</div>
+                        <div class="pollutant-grid" id="pollutantGrid"></div>
+                    </div>
+                </div>
+                <div class="card card-disasters" id="disasterCard">
+                    <div class="card-header">
+                        <h2>🌪️ Active Disasters</h2><span class="card-badge" id="disasterCount">--</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="disaster-list" id="disasterList">
+                            <div class="loading-spinner">
+                                <div class="spinner"></div><span>Scanning NASA EONET...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Risk Analysis -->
+            <section class="dashboard-row">
+                <div class="card card-risk card-full-width" id="riskCard">
+                    <div class="card-header">
+                        <h2>⚠️ AI Risk Analysis</h2>
+                        <div class="card-header-right">
+                            <span class="card-badge badge-zai">🧠 Z.AI GLM-4.5 Thinking Mode</span>
+                            <button class="analyze-btn" id="analyzeBtn" onclick="runRiskAnalysis()"><span
+                                    class="btn-icon">⚡</span> Run Analysis</button>
+                        </div>
+                    </div>
+                    <div class="card-body risk-body">
+                        <div class="risk-left">
+                            <div class="risk-score-display">
+                                <div class="risk-score-circle" id="riskScoreCircle"><span class="risk-score-number"
+                                        id="riskScoreNumber">--</span><span class="risk-score-label">Risk Score</span>
+                                </div>
+                                <div class="risk-level-text" id="riskLevelText">Click "Run Analysis" to begin</div>
+                            </div>
+                            <div class="risk-categories" id="riskCategories"></div>
+                        </div>
+                        <div class="risk-right">
+                            <div class="thinking-panel" id="thinkingPanel">
+                                <div class="thinking-header"><span class="thinking-icon">🧠</span><span>Z.AI GLM
+                                        Reasoning Chain</span><span class="thinking-status"
+                                        id="thinkingStatus">Idle</span></div>
+                                <div class="thinking-content" id="thinkingContent">
+                                    <div class="thinking-placeholder">AI reasoning will appear here when analysis
+                                        runs...</div>
+                                </div>
+                            </div>
+                            <div class="recommendations-panel" id="recommendationsPanel">
+                                <h3>📋 Recommendations</h3>
+                                <div id="recommendationsList" class="recommendations-list">
+                                    <div class="recommendation-placeholder">Run analysis to get recommendations</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="recommendations-panel" id="recommendationsPanel">
-                            <h3>📋 Recommendations</h3>
-                            <div id="recommendationsList" class="recommendations-list">
-                                <div class="recommendation-placeholder">Run analysis to get recommendations</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Pipeline -->
+            <section class="dashboard-row">
+                <div class="card card-pipeline card-full-width" id="pipelineCard">
+                    <div class="card-header">
+                        <h2>🤖 Autonomous Agent Pipeline</h2>
+                        <div class="card-header-right">
+                            <span class="card-badge badge-agent">Live Agent</span>
+                            <span class="pipeline-cycle" id="pipelineCycle">Cycle: --</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="pipeline-stages">
+                            <div class="pipeline-stage" id="stageMonitor"><span class="stage-icon">📡</span><span
+                                    class="stage-label">Monitor</span><span class="stage-status">Scanning</span></div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-stage" id="stageDetect"><span class="stage-icon">🔍</span><span
+                                    class="stage-label">Detect</span><span class="stage-status">Thresholds</span></div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-stage" id="stageAnalyze"><span class="stage-icon">🧠</span><span
+                                    class="stage-label">Z.AI</span><span class="stage-status">Analyze</span></div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-stage" id="stageAdvise"><span class="stage-icon">💚</span><span
+                                    class="stage-label">FLock</span><span class="stage-status">Advise</span></div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-stage" id="stageAlert"><span class="stage-icon">🔔</span><span
+                                    class="stage-label">Alert</span><span class="stage-status">Push</span></div>
+                        </div>
+                        <div class="pipeline-log" id="pipelineLog">
+                            <div class="pipeline-log-entry"><span class="log-time">--:--:--</span><span
+                                    class="log-type">⏳</span><span class="log-detail">Waiting for first autonomous
+                                    cycle...</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- TAB 3: COMMUNITY — Collective Impact         -->
+        <!-- ═══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-community">
+            <section class="dashboard-row">
+                <!-- Community Tracker -->
+                <div class="card card-community" id="communityCard">
+                    <div class="card-header">
+                        <h2>📊 Community Impact</h2><span class="card-badge">Live Tracker</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="impact-stats">
+                            <div class="stat-circle"><span class="stat-number" id="totalCO2">127.4</span><span
+                                    class="stat-unit">kg CO₂</span><span class="stat-label">Total Saved</span></div>
+                        </div>
+                        <div class="equivalents-grid">
+                            <div class="equiv-item"><span class="equiv-icon">🌳</span><span class="equiv-value"
+                                    id="treesEquiv">5.8</span><span class="equiv-label">Trees Planted</span></div>
+                            <div class="equiv-item"><span class="equiv-icon">🚗</span><span class="equiv-value"
+                                    id="carEquiv">607</span><span class="equiv-label">Car km Avoided</span></div>
+                            <div class="equiv-item"><span class="equiv-icon">✈️</span><span class="equiv-value"
+                                    id="flightEquiv">0.51</span><span class="equiv-label">Flights Offset</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Advisor -->
+                <div class="card card-advisor" id="advisorCard">
+                    <div class="card-header">
+                        <h2>💚 Action Advisor</h2><span class="card-badge badge-flock">FLock.io</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="tip-carousel" id="tipCarousel">
+                            <div class="tip-card active" data-index="0">
+                                <div class="tip-icon">🚲</div>
+                                <div class="tip-text">Cycle instead of drive for your commute</div>
+                                <div class="tip-meta"><span class="tip-impact">🌳 High Impact</span><span
+                                        class="tip-savings">-2.3 kg CO₂/trip</span></div>
+                            </div>
+                            <div class="tip-card" data-index="1">
+                                <div class="tip-icon">🥗</div>
+                                <div class="tip-text">Try a plant-based meal today</div>
+                                <div class="tip-meta"><span class="tip-impact">🌿 Medium Impact</span><span
+                                        class="tip-savings">-2.5 kg CO₂/meal</span></div>
+                            </div>
+                            <div class="tip-card" data-index="2">
+                                <div class="tip-icon">💡</div>
+                                <div class="tip-text">Switch to LED bulbs in 3 rooms</div>
+                                <div class="tip-meta"><span class="tip-impact">🌱 Moderate</span><span
+                                        class="tip-savings">-45 kg CO₂/year</span></div>
+                            </div>
+                            <div class="tip-card" data-index="3">
+                                <div class="tip-icon">🚌</div>
+                                <div class="tip-text">Use public transport once this week</div>
+                                <div class="tip-meta"><span class="tip-impact">🌳 High Impact</span><span
+                                        class="tip-savings">-1.2 kg CO₂/trip</span></div>
+                            </div>
+                            <div class="tip-card" data-index="4">
+                                <div class="tip-icon">🛍️</div>
+                                <div class="tip-text">Bring reusable bags to every store</div>
+                                <div class="tip-meta"><span class="tip-impact">🌱 Moderate</span><span
+                                        class="tip-savings">-0.2 kg CO₂/use</span></div>
                             </div>
                         </div>
+                        <div class="tip-dots" id="tipDots"></div>
+                        <button class="refresh-tips-btn" onclick="cycleTip()">Next Tip →</button>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Row 2.5: Autonomous Agent Pipeline Log -->
-        <section class="dashboard-row">
-            <div class="card card-pipeline card-full-width" id="pipelineCard">
-                <div class="card-header">
-                    <h2>🤖 Autonomous Agent Pipeline</h2>
-                    <div class="card-header-right">
-                        <span class="card-badge badge-agent">Live Agent</span>
-                        <span class="pipeline-cycle" id="pipelineCycle">Cycle: --</span>
+                <!-- Edu Mode -->
+                <div class="card card-edu" id="eduCard">
+                    <div class="card-header">
+                        <h2>🎓 Climate Quiz</h2><span class="card-badge badge-kids">Interactive</span>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="pipeline-stages">
-                        <div class="pipeline-stage" id="stageMonitor">
-                            <span class="stage-icon">📡</span>
-                            <span class="stage-label">Monitor</span>
-                            <span class="stage-status">Scanning</span>
-                        </div>
-                        <div class="pipeline-arrow">→</div>
-                        <div class="pipeline-stage" id="stageDetect">
-                            <span class="stage-icon">🔍</span>
-                            <span class="stage-label">Detect</span>
-                            <span class="stage-status">Thresholds</span>
-                        </div>
-                        <div class="pipeline-arrow">→</div>
-                        <div class="pipeline-stage" id="stageAnalyze">
-                            <span class="stage-icon">🧠</span>
-                            <span class="stage-label">Z.AI</span>
-                            <span class="stage-status">Analyze</span>
-                        </div>
-                        <div class="pipeline-arrow">→</div>
-                        <div class="pipeline-stage" id="stageAdvise">
-                            <span class="stage-icon">💚</span>
-                            <span class="stage-label">FLock</span>
-                            <span class="stage-status">Advise</span>
-                        </div>
-                        <div class="pipeline-arrow">→</div>
-                        <div class="pipeline-stage" id="stageAlert">
-                            <span class="stage-icon">🔔</span>
-                            <span class="stage-label">Alert</span>
-                            <span class="stage-status">Push</span>
-                        </div>
-                    </div>
-                    <div class="pipeline-log" id="pipelineLog">
-                        <div class="pipeline-log-entry">
-                            <span class="log-time">--:--:--</span>
-                            <span class="log-type">⏳</span>
-                            <span class="log-detail">Waiting for first autonomous cycle...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Row 3: Action Advisor + Community Tracker + Edu Mode -->
-        <section class="dashboard-row">
-            <!-- Action Advisor -->
-            <div class="card card-advisor" id="advisorCard">
-                <div class="card-header">
-                    <h2>💚 Action Advisor</h2>
-                    <span class="card-badge badge-flock">FLock.io</span>
-                </div>
-                <div class="card-body">
-                    <div class="tip-carousel" id="tipCarousel">
-                        <div class="tip-card active" data-index="0">
-                            <div class="tip-icon">🚲</div>
-                            <div class="tip-text">Cycle instead of drive for your commute</div>
-                            <div class="tip-meta">
-                                <span class="tip-impact">🌳 High Impact</span>
-                                <span class="tip-savings">-2.3 kg CO₂/trip</span>
+                    <div class="card-body">
+                        <div class="quiz-section">
+                            <div class="quiz-question" id="quizQuestion">🌍 What gas do trees breathe in?</div>
+                            <div class="quiz-options" id="quizOptions">
+                                <button class="quiz-option" onclick="checkAnswer(this, false)">A) Oxygen</button>
+                                <button class="quiz-option correct" onclick="checkAnswer(this, true)">B) Carbon
+                                    Dioxide</button>
+                                <button class="quiz-option" onclick="checkAnswer(this, false)">C) Nitrogen</button>
                             </div>
+                            <div class="quiz-result" id="quizResult"></div>
+                            <button class="next-question-btn" id="nextQuestionBtn" onclick="nextQuestion()"
+                                style="display:none">Next Question →</button>
                         </div>
-                        <div class="tip-card" data-index="1">
-                            <div class="tip-icon">🥗</div>
-                            <div class="tip-text">Try a plant-based meal today</div>
-                            <div class="tip-meta">
-                                <span class="tip-impact">🌿 Medium Impact</span>
-                                <span class="tip-savings">-2.5 kg CO₂/meal</span>
-                            </div>
+                        <div class="fun-fact" id="funFact">
+                            <span class="fact-label">🤯 Fun Fact</span>
+                            <p id="factText">A single large whale captures about 33 TONS of CO₂ over its lifetime!</p>
                         </div>
-                        <div class="tip-card" data-index="2">
-                            <div class="tip-icon">💡</div>
-                            <div class="tip-text">Switch to LED bulbs in 3 rooms</div>
-                            <div class="tip-meta">
-                                <span class="tip-impact">🌱 Moderate</span>
-                                <span class="tip-savings">-45 kg CO₂/year</span>
-                            </div>
-                        </div>
-                        <div class="tip-card" data-index="3">
-                            <div class="tip-icon">🚌</div>
-                            <div class="tip-text">Use public transport once this week</div>
-                            <div class="tip-meta">
-                                <span class="tip-impact">🌳 High Impact</span>
-                                <span class="tip-savings">-1.2 kg CO₂/trip</span>
-                            </div>
-                        </div>
-                        <div class="tip-card" data-index="4">
-                            <div class="tip-icon">🛍️</div>
-                            <div class="tip-text">Bring reusable bags to every store</div>
-                            <div class="tip-meta">
-                                <span class="tip-impact">🌱 Moderate</span>
-                                <span class="tip-savings">-0.2 kg CO₂/use</span>
-                            </div>
+                        <div class="sdg-badges">
+                            <span class="sdg-badge sdg-13">SDG 13</span>
+                            <span class="sdg-badge sdg-11">SDG 11</span>
+                            <span class="sdg-badge sdg-4">SDG 4</span>
+                            <span class="sdg-badge sdg-17">SDG 17</span>
                         </div>
                     </div>
-                    <div class="tip-dots" id="tipDots"></div>
-                    <button class="refresh-tips-btn" onclick="cycleTip()">Next Tip →</button>
                 </div>
-            </div>
+            </section>
+        </div>
 
-            <!-- Community Tracker -->
-            <div class="card card-community" id="communityCard">
-                <div class="card-header">
-                    <h2>📊 Community Impact</h2>
-                    <span class="card-badge">Live Tracker</span>
-                </div>
-                <div class="card-body">
-                    <div class="impact-stats">
-                        <div class="stat-circle">
-                            <span class="stat-number" id="totalCO2">127.4</span>
-                            <span class="stat-unit">kg CO₂</span>
-                            <span class="stat-label">Total Saved</span>
-                        </div>
-                    </div>
-                    <div class="equivalents-grid">
-                        <div class="equiv-item">
-                            <span class="equiv-icon">🌳</span>
-                            <span class="equiv-value" id="treesEquiv">5.8</span>
-                            <span class="equiv-label">Trees Planted</span>
-                        </div>
-                        <div class="equiv-item">
-                            <span class="equiv-icon">🚗</span>
-                            <span class="equiv-value" id="carEquiv">607</span>
-                            <span class="equiv-label">Car km Avoided</span>
-                        </div>
-                        <div class="equiv-item">
-                            <span class="equiv-icon">✈️</span>
-                            <span class="equiv-value" id="flightEquiv">0.51</span>
-                            <span class="equiv-label">Flights Offset</span>
-                        </div>
-                    </div>
-                    <div class="action-log">
-                        <h3>Recent Actions</h3>
-                        <div class="log-list" id="actionLog">
-                            <div class="log-item"><span class="log-icon">♻️</span><span>Recycled 5 plastic
-                                    bottles</span><span class="log-co2">-2.5 kg</span></div>
-                            <div class="log-item"><span class="log-icon">🚲</span><span>Cycled to work</span><span
-                                    class="log-co2">-2.3 kg</span></div>
-                            <div class="log-item"><span class="log-icon">🥗</span><span>Plant-based lunch</span><span
-                                    class="log-co2">-2.5 kg</span></div>
-                            <div class="log-item"><span class="log-icon">🚌</span><span>Took the bus</span><span
-                                    class="log-co2">-1.2 kg</span></div>
-                        </div>
-                    </div>
-                    <div class="log-input-row">
-                        <input type="text" id="actionInput" placeholder="Log an eco-action..." class="action-input">
-                        <button class="log-btn" onclick="logAction()">Log ✓</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Edu Mode + SDG -->
-            <div class="card card-edu" id="eduCard">
-                <div class="card-header">
-                    <h2>🎮 Edu Mode</h2>
-                    <span class="card-badge badge-kids">Kid-Friendly</span>
-                </div>
-                <div class="card-body">
-                    <div class="quiz-section">
-                        <div class="quiz-question" id="quizQuestion">
-                            🌍 What gas do trees breathe in?
-                        </div>
-                        <div class="quiz-options" id="quizOptions">
-                            <button class="quiz-option" onclick="checkAnswer(this, false)">A) Oxygen</button>
-                            <button class="quiz-option correct" onclick="checkAnswer(this, true)">B) Carbon
-                                Dioxide</button>
-                            <button class="quiz-option" onclick="checkAnswer(this, false)">C) Nitrogen</button>
-                        </div>
-                        <div class="quiz-result" id="quizResult"></div>
-                        <button class="next-question-btn" id="nextQuestionBtn" onclick="nextQuestion()"
-                            style="display:none">Next Question →</button>
-                    </div>
-                    <div class="fun-fact" id="funFact">
-                        <span class="fact-label">🤯 Fun Fact</span>
-                        <p id="factText">A single large whale captures about 33 TONS of CO₂ over its lifetime!</p>
-                    </div>
-                    <div class="sdg-badges">
-                        <span class="sdg-badge sdg-13">SDG 13</span>
-                        <span class="sdg-badge sdg-11">SDG 11</span>
-                        <span class="sdg-badge sdg-4">SDG 4</span>
-                        <span class="sdg-badge sdg-17">SDG 17</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Row 4: Carbon Wallet + Trophy Case + Quest Board -->
-        <section class="dashboard-row">
-            <!-- Carbon Credit Wallet -->
-            <div class="card card-wallet" id="walletCard">
-                <div class="card-header">
-                    <h2>🪙 Carbon Wallet</h2>
-                    <span class="card-badge badge-wallet">$GREEN</span>
-                </div>
-                <div class="card-body">
-                    <div class="wallet-hero">
-                        <div class="wallet-rank-icon" id="walletRankIcon">🌱</div>
-                        <div class="wallet-rank-name" id="walletRankName">Seedling</div>
-                    </div>
-                    <div class="wallet-balance">
-                        <span class="wallet-amount" id="walletCredits">0</span>
-                        <span class="wallet-currency">$GREEN</span>
-                    </div>
-                    <div class="wallet-stats-grid">
-                        <div class="wallet-stat">
-                            <span class="wallet-stat-value" id="walletCO2">0</span>
-                            <span class="wallet-stat-label">kg CO₂ saved</span>
-                        </div>
-                        <div class="wallet-stat">
-                            <span class="wallet-stat-value" id="walletStreak">0</span>
-                            <span class="wallet-stat-label">day streak 🔥</span>
-                        </div>
-                        <div class="wallet-stat">
-                            <span class="wallet-stat-value" id="walletActions">0</span>
-                            <span class="wallet-stat-label">actions</span>
-                        </div>
-                    </div>
-                    <div class="wallet-progress">
-                        <div class="progress-label">
-                            <span>Next rank:</span>
-                            <span id="walletNextRank">🌿 Sprout</span>
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="walletProgressBar" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-remaining" id="walletRemaining">25 credits to go</div>
-                    </div>
-                    <div class="wallet-connect" id="walletConnectSection">
-                        <div class="wallet-connect-label">🔗 Link your wallet for on-chain NFTs:</div>
-                        <div class="wallet-connect-row">
-                            <input type="text" id="walletAddressInput" placeholder="0x..." class="wallet-address-input"
-                                maxlength="42">
-                            <button class="wallet-connect-btn" onclick="connectWallet()">Connect</button>
-                        </div>
-                        <div class="wallet-connected-info" id="walletConnectedInfo" style="display:none">
-                            <span class="wallet-connected-dot">●</span>
-                            <span id="walletLinkedAddress"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Trophy Case (Badges) -->
-            <div class="card card-trophies" id="trophyCard">
-                <div class="card-header">
-                    <h2>🏅 Trophy Case</h2>
-                    <span class="card-badge badge-nft">NFT Badges</span>
-                </div>
-                <div class="card-body">
-                    <div class="trophy-grid" id="trophyGrid">
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">🌱</div>
-                            <div class="trophy-name">Genesis Green</div>
-                            <div class="trophy-desc">First eco-action</div>
-                        </div>
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">🌿</div>
-                            <div class="trophy-name">Half Century</div>
-                            <div class="trophy-desc">50 kg CO₂</div>
-                        </div>
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">🌳</div>
-                            <div class="trophy-name">Centurion</div>
-                            <div class="trophy-desc">100 kg CO₂</div>
-                        </div>
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">📸</div>
-                            <div class="trophy-name">Proof of Green</div>
-                            <div class="trophy-desc">Vision AI verified</div>
-                        </div>
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">🔥</div>
-                            <div class="trophy-name">Streak Master</div>
-                            <div class="trophy-desc">7-day streak</div>
-                        </div>
-                        <div class="trophy-item trophy-locked">
-                            <div class="trophy-icon">🌍</div>
-                            <div class="trophy-name">Guardian</div>
-                            <div class="trophy-desc">500 kg CO₂</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quest Board -->
-            <div class="card card-quests" id="questCard">
-                <div class="card-header">
-                    <h2>🎮 Daily Quests</h2>
-                    <span class="card-badge badge-quest">XP System</span>
-                </div>
-                <div class="card-body">
-                    <div class="quest-hero">
-                        <span class="quest-level-icon" id="questLevelIcon">🥚</span>
-                        <span class="quest-level-name" id="questLevelName">Hatchling</span>
-                        <span class="quest-xp" id="questXP">0 XP</span>
-                    </div>
-                    <div class="quest-list" id="questList">
-                        <div class="quest-item">
-                            <span class="quest-title">Loading quests...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- Footer -->

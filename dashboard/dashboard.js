@@ -12,6 +12,26 @@ let currentCity = 'London';
 let currentTipIndex = 0;
 let chatOpen = false;
 let myGlobe; // 3D Threat Map Globe Instance
+let globeInitialized = false;
+
+// ============================================
+// Tab Navigation
+// ============================================
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+
+    // Lazy-init globe when Intelligence tab is first opened
+    if (tabName === 'intelligence' && !globeInitialized) {
+        globeInitialized = true;
+        setTimeout(initGlobe, 100);
+    }
+}
 
 // ============================================
 // Particles Background
@@ -36,7 +56,7 @@ function createParticles() {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     createParticles();
-    initGlobe(); // Initialize 3D Threat Map
+    // Globe is lazy-loaded when Intelligence tab is opened
     loadCityData();
     initTipDots();
     loadRandomFact();
@@ -771,6 +791,12 @@ async function loadWallet() {
             document.getElementById('walletProgressBar').style.width = '100%';
             document.getElementById('walletRemaining').textContent = 'You are a legend!';
         }
+
+        // Update hero stats on Home tab
+        const heroCredits = document.getElementById('heroCredits');
+        const heroStreak = document.getElementById('heroStreak');
+        if (heroCredits) heroCredits.textContent = data.credits || 0;
+        if (heroStreak) heroStreak.textContent = data.streak_days || 0;
 
         // Show connected wallet address
         if (data.wallet_address) {

@@ -275,6 +275,199 @@ body.kids-theme .bg-gradient {
     }
 }
 
+/* ============================================
+   Tab Navigation
+   ============================================ */
+.tab-nav {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 3px;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: calc(var(--radius-md) - 2px);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.tab-btn.active {
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--accent-green);
+    box-shadow: 0 2px 8px rgba(74, 222, 128, 0.15);
+}
+
+.tab-icon {
+    font-size: 1rem;
+}
+
+.tab-label {
+    white-space: nowrap;
+}
+
+.tab-content {
+    display: none;
+    animation: tabSlideIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes tabSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header Pills */
+.header-badges {
+    display: flex;
+    gap: 6px;
+}
+
+.header-pill {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+}
+
+/* ============================================
+   Home Hero Section
+   ============================================ */
+.home-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.08) 0%, rgba(59, 130, 246, 0.06) 50%, rgba(167, 139, 250, 0.04) 100%);
+    border: 1px solid rgba(74, 222, 128, 0.12);
+}
+
+.hero-greeting h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.hero-greeting h2 span {
+    background: var(--gradient-green);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-greeting p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.hero-stats {
+    display: flex;
+    gap: 24px;
+}
+
+.hero-stat {
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+}
+
+.hero-stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+}
+
+.hero-stat-label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+
+/* NFT Contract Info */
+.nft-contract-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.nft-chain-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(96, 165, 250, 0.12);
+    color: var(--accent-blue);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    font-weight: 600;
+}
+
+.nft-contract-addr {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    cursor: help;
+}
+
+/* Intel Search Bar */
+.intel-search {
+    margin-bottom: 16px;
+}
+
+.search-box-large {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 8px 16px !important;
+}
+
+.search-box-large input {
+    font-size: 0.9rem !important;
+}
+
+.search-box-large .search-btn {
+    padding: 6px 18px !important;
+    font-size: 0.8rem !important;
+}
+
 .search-box {
     display: flex;
     align-items: center;
