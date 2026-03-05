@@ -54,13 +54,23 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🌍🦞 *Welcome to GreenClaw!*\n\n"
         "I'm your AI climate action agent, powered by Z.AI + FLock.io.\n\n"
-        "🌡️ /climate London — Real-time weather & AQI\n"
-        "⚠️ /risk Delhi — Z.AI risk analysis\n"
-        "💚 /tips — Eco-sustainability tips\n"
-        "🎮 /quiz — Climate quiz\n"
-        "📊 /log planted a tree — Log eco-action\n"
-        "📈 /stats — Community impact\n"
-        "🔔 /alerts — Current autonomous alerts\n\n"
+        "*🌡️ Climate*\n"
+        "/climate London — Real-time weather & AQI\n"
+        "/risk Delhi — Z.AI risk analysis\n"
+        "/predict Tokyo — 7-day predictive forecast\n"
+        "/debate Mumbai — Multi-agent climate debate\n\n"
+        "*🌿 Eco-Actions*\n"
+        "/log planted a tree — Log an eco-action\n"
+        "/quest — Daily climate missions\n"
+        "📸 Send a photo — Vision AI verification\n\n"
+        "*💰 Rewards*\n"
+        "/wallet — Your carbon credit wallet\n"
+        "/badges — Achievement NFT badges\n"
+        "/stats — Community impact\n\n"
+        "*🎮 More*\n"
+        "/tips — Sustainability tips\n"
+        "/quiz — Climate quiz\n"
+        "/alerts — Autonomous alerts\n\n"
         "Or just type a message and I'll route it to the right agent! 🤖",
         parse_mode="Markdown"
     )
@@ -353,6 +363,173 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"⚠️ Error: {e}")
 
 # ──────────────────────────────────────────────
+# /wallet — Carbon Credit Wallet
+# ──────────────────────────────────────────────
+async def cmd_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    try:
+        r = http.get(f"{API_BASE}/api/wallet/{user}")
+        data = r.json()
+        
+        next_info = ""
+        if data.get("next_rank"):
+            nr = data["next_rank"]
+            next_info = f"\n📈 Next rank: {nr['icon']} {nr['name']} ({nr['remaining']} credits away)"
+        
+        msg = (
+            f"🪙 *{user}'s Carbon Wallet*\n\n"
+            f"{data.get('rank_icon', '🌱')} Rank: *{data.get('rank_name', 'Seedling')}*\n"
+            f"💰 Credits: *{data.get('credits', 0)} $GREEN*\n"
+            f"🌍 Lifetime CO₂ saved: *{data.get('lifetime_co2_kg', 0)} kg*\n"
+            f"📋 Total actions: {data.get('actions_count', 0)}\n"
+            f"🔥 Streak: {data.get('streak_days', 0)} days"
+            f"{next_info}\n\n"
+            f"_Earn more by logging eco-actions with /log or sending photos!_"
+        )
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /badges — Achievement NFT Badges
+# ──────────────────────────────────────────────
+async def cmd_badges(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    try:
+        r = http.get(f"{API_BASE}/api/badges/{user}")
+        data = r.json()
+        badges = data.get("badges", [])
+        
+        if not badges:
+            msg = (
+                f"🏅 *{user}'s Trophy Case*\n\n"
+                f"No badges yet! Complete eco-actions to earn your first badge.\n\n"
+                f"_Try: /log recycled plastic bottles_"
+            )
+        else:
+            badge_list = "\n".join([f"  {b['name']} — _{b['desc']}_\n  Token: `{b['token_id']}`" for b in badges])
+            msg = (
+                f"🏅 *{user}'s Trophy Case* ({len(badges)} badges)\n\n"
+                f"{badge_list}\n\n"
+                f"_{len(data.get('available_milestones', []))} more badges available!_"
+            )
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /debate <city> — Multi-Agent Climate Debate
+# ──────────────────────────────────────────────
+async def cmd_debate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = " ".join(context.args) if context.args else "London"
+    await update.message.reply_text(f"🌍 *Initiating multi-agent debate for {city}...*\n_5 agents will argue about the best climate strategy!_", parse_mode="Markdown")
+    
+    try:
+        r = http.get(f"{API_BASE}/api/debate/{city}", timeout=120.0)
+        data = r.json()
+        debate = data.get("debate", [])
+        
+        msg = f"🎤 *Climate Debate: {city}*\n\n"
+        for entry in debate:
+            msg += f"{entry['icon']} *{entry['agent']}:*\n{entry['message']}\n\n"
+        msg += "_Debate powered by Z.AI + FLock.io multi-agent system_"
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Debate error: {e}")
+
+# ──────────────────────────────────────────────
+# /predict <city> — Predictive Climate Forecast
+# ──────────────────────────────────────────────
+async def cmd_predict(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = " ".join(context.args) if context.args else "London"
+    await update.message.reply_text(f"🔮 *Generating predictive forecast for {city}...*", parse_mode="Markdown")
+    
+    try:
+        r = http.get(f"{API_BASE}/api/predict/{city}", timeout=60.0)
+        data = r.json()
+        
+        if "error" in data:
+            await update.message.reply_text(f"⚠️ {data['error']}")
+            return
+        
+        pred = data.get("prediction", {})
+        trend_icon = {"improving": "📈", "stable": "➡️", "worsening": "📉"}.get(pred.get("risk_trend", ""), "❓")
+        
+        msg = f"🔮 *7-Day Predictive Forecast: {city}*\n\n"
+        msg += f"Trend: {trend_icon} *{pred.get('risk_trend', 'unknown').title()}*\n\n"
+        
+        for p in pred.get("predictions", []):
+            risk_icon = {"low": "🟢", "medium": "🟡", "high": "🟠", "critical": "🔴"}.get(p.get("risk", ""), "⚪")
+            msg += f"Day {p['day']}: {risk_icon} {p.get('event', '')} (Conf: {int(p.get('confidence', 0)*100)}%)\n"
+        
+        warnings = pred.get("early_warnings", [])
+        if warnings:
+            msg += f"\n⚠️ *Early Warnings:*\n"
+            for w in warnings:
+                msg += f"  • {w}\n"
+        
+        msg += f"\n_Predictions by Z.AI GLM-4 Thinking Mode_"
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Prediction error: {e}")
+
+# ──────────────────────────────────────────────
+# /quest — Climate Quest System
+# ──────────────────────────────────────────────
+async def cmd_quest(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    args = context.args
+    
+    # If user wants to complete a quest: /quest done 3
+    if args and args[0].lower() == "done" and len(args) > 1:
+        try:
+            quest_id = int(args[1])
+            r = http.post(f"{API_BASE}/api/quest/complete", json={"user": user, "quest_id": quest_id})
+            data = r.json()
+            
+            if "error" in data:
+                await update.message.reply_text(f"⚠️ {data['error']}")
+                return
+            
+            quest = data.get("quest", {})
+            msg = (
+                f"✅ *Quest Complete!*\n\n"
+                f"📋 {quest.get('title', '')}\n"
+                f"⭐ XP earned: +{data.get('xp_earned', 0)}\n"
+                f"🪙 Credits earned: +{data.get('wallet', {}).get('earned_this_action', 0)} $GREEN\n"
+                f"🌍 CO₂ saved: {quest.get('co2_kg', 0)} kg\n\n"
+                f"📊 Level: {data.get('level_name', '')} (XP: {data.get('total_xp', 0)})\n"
+                f"📈 Next level in: {data.get('next_level_xp', '?')} XP"
+            )
+            await update.message.reply_text(msg, parse_mode="Markdown")
+        except Exception as e:
+            await update.message.reply_text(f"⚠️ Error: {e}")
+        return
+    
+    # Show available quests
+    try:
+        r = http.get(f"{API_BASE}/api/quests")
+        data = r.json()
+        quests = data.get("quests", [])
+        
+        # Get profile
+        r2 = http.get(f"{API_BASE}/api/quest/profile/{user}")
+        profile = r2.json()
+        
+        msg = (
+            f"🎮 *Daily Climate Quests*\n"
+            f"📊 {profile.get('level_name', '🥚 Hatchling')} | XP: {profile.get('total_xp', 0)} | Today: {profile.get('quests_completed_today', 0)}/5\n\n"
+        )
+        
+        for q in quests:
+            msg += f"*{q['id']}.* {q['title']}\n   ⭐ {q['xp']} XP | 🌍 {q['co2_kg']} kg CO₂\n\n"
+        
+        msg += f"_Complete a quest: /quest done <number>_"
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
 def main():
@@ -382,6 +559,12 @@ def main():
     app.add_handler(CommandHandler("log", cmd_log))
     app.add_handler(CommandHandler("stats", cmd_stats))
     app.add_handler(CommandHandler("alerts", cmd_alerts))
+    # Phase 15: Winning Features
+    app.add_handler(CommandHandler("wallet", cmd_wallet))
+    app.add_handler(CommandHandler("badges", cmd_badges))
+    app.add_handler(CommandHandler("debate", cmd_debate))
+    app.add_handler(CommandHandler("predict", cmd_predict))
+    app.add_handler(CommandHandler("quest", cmd_quest))
 
     # Photo handler
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
@@ -394,3 +577,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

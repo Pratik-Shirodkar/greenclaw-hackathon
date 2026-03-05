@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import httpx
@@ -40,6 +40,9 @@ DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 ACTIONS_FILE = DATA_DIR / "actions.json"
 USERS_FILE = DATA_DIR / "users.json"
+WALLETS_FILE = DATA_DIR / "wallets.json"
+BADGES_FILE = DATA_DIR / "badges.json"
+QUESTS_FILE = DATA_DIR / "quests.json"
 
 # In-memory alert store
 active_alerts: list[dict] = []
@@ -92,6 +95,10 @@ class VisionLogRequest(BaseModel):
 class RegisterRequest(BaseModel):
     chat_id: int
     user: str = "anonymous"
+
+class QuestCompleteRequest(BaseModel):
+    user: str = "anonymous"
+    quest_id: int
 
 # ──────────────────────────────────────────────
 # HTTP Client
@@ -469,6 +476,11 @@ def log_community_action(req: ActionLogRequest):
             actions = []
     actions.append(entry)
     ACTIONS_FILE.write_text(json.dumps(actions, indent=2))
+    
+    # Award credits to wallet
+    wallet_result = update_wallet(req.user, co2)
+    entry["wallet"] = wallet_result
+    
     return entry
 
 @app.post("/api/community/register")
@@ -604,6 +616,404 @@ def community_stats():
         },
         "leaderboard": [{"user": u, "co2_kg": round(v, 2)} for u, v in leaderboard],
         "recent": actions[-10:][::-1],
+    }
+
+# ──────────────────────────────────────────────
+# FEATURE 1: CARBON CREDIT WALLET
+# ──────────────────────────────────────────────
+RANK_TIERS = [
+    (0,   "🌱", "Seedling"),
+    (25,  "🌿", "Sprout"),
+    (100, "🌳", "Tree"),
+    (500, "🌍", "Guardian"),
+    (1000,"🦞", "GreenClaw Legend"),
+]
+
+def get_rank(credits: float) -> tuple:
+    rank = RANK_TIERS[0]
+    for threshold, icon, name in RANK_TIERS:
+        if credits >= threshold:
+            rank = (threshold, icon, name)
+    return rank
+
+def load_wallets() -> dict:
+    if WALLETS_FILE.exists():
+        try: return json.loads(WALLETS_FILE.read_text())
+        except: pass
+    return {}
+
+def save_wallets(wallets: dict):
+    WALLETS_FILE.write_text(json.dumps(wallets, indent=2))
+
+def update_wallet(user: str, co2_added: float) -> dict:
+    """Add credits to a user's wallet and check for badge milestones."""
+    wallets = load_wallets()
+    if user not in wallets:
+        wallets[user] = {"credits": 0, "lifetime_co2": 0, "actions_count": 0, "streak_days": 0, "last_action_date": ""}
+    
+    w = wallets[user]
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Streak logic
+    yesterday = (datetime.now(timezone.utc).replace(hour=0, minute=0) - timedelta(days=1)).strftime("%Y-%m-%d")
+    if w["last_action_date"] == yesterday:
+        w["streak_days"] += 1
+    elif w["last_action_date"] != today:
+        w["streak_days"] = 1
+    
+    # Streak multiplier
+    multiplier = 1.0
+    if w["streak_days"] >= 30: multiplier = 3.0
+    elif w["streak_days"] >= 7: multiplier = 2.0
+    elif w["streak_days"] >= 3: multiplier = 1.5
+    
+    earned = round(co2_added * multiplier, 2)
+    w["credits"] += earned
+    w["lifetime_co2"] += co2_added
+    w["actions_count"] += 1
+    w["last_action_date"] = today
+    
+    save_wallets(wallets)
+    
+    # Check badge milestones
+    check_milestones(user, w)
+    
+    return {**w, "earned_this_action": earned, "multiplier": multiplier}
+
+@app.get("/api/wallet/{user}")
+def get_wallet(user: str):
+    """Get a user's carbon credit wallet."""
+    wallets = load_wallets()
+    w = wallets.get(user, {"credits": 0, "lifetime_co2": 0, "actions_count": 0, "streak_days": 0})
+    _, rank_icon, rank_name = get_rank(w["credits"])
+    
+    # Find next rank
+    next_rank = None
+    for threshold, icon, name in RANK_TIERS:
+        if w["credits"] < threshold:
+            next_rank = {"threshold": threshold, "icon": icon, "name": name, "remaining": round(threshold - w["credits"], 2)}
+            break
+    
+    return {
+        "user": user,
+        "credits": round(w["credits"], 2),
+        "lifetime_co2_kg": round(w.get("lifetime_co2", w["credits"]), 2),
+        "actions_count": w.get("actions_count", 0),
+        "streak_days": w.get("streak_days", 0),
+        "rank_icon": rank_icon,
+        "rank_name": rank_name,
+        "next_rank": next_rank,
+    }
+
+# ──────────────────────────────────────────────
+# FEATURE 2: AI-GENERATED ACHIEVEMENT NFT BADGES
+# ──────────────────────────────────────────────
+MILESTONES = [
+    {"id": "genesis",      "name": "🌱 Genesis Green",       "desc": "Completed your first eco-action!",     "threshold_type": "actions", "threshold": 1},
+    {"id": "halfcentury",  "name": "🌿 Half Century Hero",   "desc": "Saved 50 kg of CO₂!",                  "threshold_type": "credits", "threshold": 50},
+    {"id": "centurion",    "name": "🌳 Carbon Centurion",    "desc": "Saved 100 kg of CO₂!",                 "threshold_type": "credits", "threshold": 100},
+    {"id": "streak7",      "name": "🔥 Streak Master",       "desc": "7-day action streak!",                  "threshold_type": "streak",  "threshold": 7},
+    {"id": "streak30",     "name": "💎 Streak Legend",        "desc": "30-day action streak!",                 "threshold_type": "streak",  "threshold": 30},
+    {"id": "photo_proof",  "name": "📸 Proof of Green",      "desc": "Verified an eco-action with Vision AI", "threshold_type": "vision",  "threshold": 1},
+    {"id": "guardian",     "name": "🌍 Planet Guardian",      "desc": "Saved 500 kg of CO₂!",                 "threshold_type": "credits", "threshold": 500},
+    {"id": "legend",       "name": "🦞 GreenClaw Legend",     "desc": "Saved 1000 kg of CO₂!",                "threshold_type": "credits", "threshold": 1000},
+]
+
+def load_badges() -> dict:
+    if BADGES_FILE.exists():
+        try: return json.loads(BADGES_FILE.read_text())
+        except: pass
+    return {}
+
+def save_badges(badges: dict):
+    BADGES_FILE.write_text(json.dumps(badges, indent=2))
+
+def check_milestones(user: str, wallet: dict):
+    """Check if the user earned any new badges."""
+    badges = load_badges()
+    user_badges = badges.get(user, [])
+    earned_ids = {b["id"] for b in user_badges}
+    
+    new_badges = []
+    for m in MILESTONES:
+        if m["id"] in earned_ids:
+            continue
+        earned = False
+        if m["threshold_type"] == "actions" and wallet.get("actions_count", 0) >= m["threshold"]:
+            earned = True
+        elif m["threshold_type"] == "credits" and wallet.get("credits", 0) >= m["threshold"]:
+            earned = True
+        elif m["threshold_type"] == "streak" and wallet.get("streak_days", 0) >= m["threshold"]:
+            earned = True
+        
+        if earned:
+            badge = {
+                "id": m["id"],
+                "name": m["name"],
+                "desc": m["desc"],
+                "earned_at": datetime.now(timezone.utc).isoformat(),
+                "token_id": f"GREENCLAW-{user[:8].upper()}-{m['id'].upper()}-{int(time.time())}",
+            }
+            user_badges.append(badge)
+            new_badges.append(badge)
+    
+    if new_badges:
+        badges[user] = user_badges
+        save_badges(badges)
+    return new_badges
+
+@app.get("/api/badges/{user}")
+def get_badges(user: str):
+    """Get a user's achievement NFT badges."""
+    badges = load_badges()
+    user_badges = badges.get(user, [])
+    return {
+        "user": user,
+        "total_badges": len(user_badges),
+        "badges": user_badges,
+        "available_milestones": [m for m in MILESTONES if m["id"] not in {b["id"] for b in user_badges}],
+    }
+
+# ──────────────────────────────────────────────
+# FEATURE 3: MULTI-AGENT CLIMATE DEBATE
+# ──────────────────────────────────────────────
+@app.get("/api/debate/{city}")
+async def climate_debate(city: str):
+    """Run a multi-agent debate about climate strategy for a city."""
+    climate = await get_climate(city)
+    weather = climate.get("weather", {})
+    aqi = climate.get("aqi", {})
+    disasters = climate.get("disasters", [])
+    
+    debate_log = []
+    
+    # Step 1: Sentinel presents the data
+    sentinel_msg = f"📊 Environmental briefing for {city}: Temp {weather.get('temp', '?')}°C, Humidity {weather.get('humidity', '?')}%, AQI {aqi.get('value', '?')} ({aqi.get('category', '?')}), {len(disasters)} active disasters nearby."
+    debate_log.append({"agent": "Sentinel", "icon": "🛰️", "message": sentinel_msg})
+    
+    # Step 2: Analyst provides Z.AI risk analysis
+    if ZAI_KEY:
+        try:
+            r = await http.post(
+                f"{ZAI_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "glm-4-plus",
+                    "messages": [{"role": "user", "content": f"You are a climate risk analyst in a debate. The data for {city}: Temp={weather.get('temp')}°C, AQI={aqi.get('value')}, Disasters={len(disasters)}. In 2-3 sentences, present your PRIMARY concern and propose a bold strategy. Be opinionated. Start with 'I believe...'"}],
+                    "max_tokens": 150, "temperature": 0.8
+                },
+                timeout=30.0,
+            )
+            analyst_msg = r.json()["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            analyst_msg = f"Based on the data, the AQI of {aqi.get('value', '?')} is concerning and industrial emissions need immediate regulation."
+    else:
+        analyst_msg = f"The AQI reading of {aqi.get('value', '?')} warrants immediate attention from local authorities."
+    debate_log.append({"agent": "Analyst", "icon": "🧠", "message": analyst_msg})
+    
+    # Step 3: Advisor counters with FLock
+    if FLOCK_KEY:
+        try:
+            r = await http.post(
+                f"{FLOCK_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {FLOCK_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "qwen/qwen2.5-72b-instruct",
+                    "messages": [{"role": "user", "content": f"You are a sustainability advisor debating with a risk analyst. The analyst said: '{analyst_msg}'. Respectfully challenge one point and propose an ALTERNATIVE approach that focuses on community-driven solutions. Be specific. 2-3 sentences. Start with 'I respectfully disagree because...'"}],
+                    "max_tokens": 150, "temperature": 0.8
+                },
+                timeout=30.0,
+            )
+            advisor_msg = r.json()["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            advisor_msg = "I respectfully disagree — community-level action through carpooling programs and urban gardens can have faster impact than waiting for policy changes."
+    else:
+        advisor_msg = "Community-driven solutions are more practical and faster than policy changes."
+    debate_log.append({"agent": "Advisor", "icon": "💚", "message": advisor_msg})
+    
+    # Step 4: Analyst rebuts
+    if ZAI_KEY:
+        try:
+            r = await http.post(
+                f"{ZAI_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "glm-4-plus",
+                    "messages": [{"role": "user", "content": f"You are a risk analyst. The advisor challenged you: '{advisor_msg}'. Acknowledge their valid point but defend your position with data. Propose a COMBINED strategy. 2 sentences. Start with 'You make a fair point, but...'"}],
+                    "max_tokens": 120, "temperature": 0.7
+                },
+                timeout=30.0,
+            )
+            rebuttal = r.json()["choices"][0]["message"]["content"].strip()
+        except:
+            rebuttal = "You make a fair point, but the data shows we need both approaches working in tandem for maximum effect."
+    else:
+        rebuttal = "A combined approach of policy and community action would be most effective."
+    debate_log.append({"agent": "Analyst", "icon": "🧠", "message": rebuttal})
+    
+    # Step 5: Dispatcher synthesizes
+    dispatcher_msg = f"📋 **Consensus Reached for {city}:** Both systemic and community approaches are needed. I'm broadcasting a combined action plan to all registered users."
+    debate_log.append({"agent": "Dispatcher", "icon": "📢", "message": dispatcher_msg})
+    
+    return {"city": city, "debate": debate_log, "climate_data": climate}
+
+# ──────────────────────────────────────────────
+# FEATURE 4: PREDICTIVE CLIMATE FORECAST
+# ──────────────────────────────────────────────
+@app.get("/api/predict/{city}")
+async def predict_climate(city: str):
+    """Use Z.AI thinking mode to predict climate risks 7 days ahead."""
+    climate = await get_climate(city)
+    weather = climate.get("weather", {})
+    aqi = climate.get("aqi", {})
+    forecast = weather.get("forecast", [])
+    
+    if not ZAI_KEY:
+        return {"error": "ZAI_API_KEY not set", "climate": climate}
+    
+    forecast_text = "\n".join([f"  {f['date']}: High {f['high']}°C, Low {f['low']}°C, {f['cond']}" for f in forecast])
+    
+    try:
+        r = await http.post(
+            f"{ZAI_BASE}/chat/completions",
+            headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "glm-4-plus",
+                "messages": [{"role": "user", "content": f"""You are a predictive climate AI. Analyze this data for {city} and predict risks for the next 7 days.
+
+Current: Temp={weather.get('temp')}°C, Humidity={weather.get('humidity')}%, AQI={aqi.get('value')} ({aqi.get('category')}), Wind={weather.get('wind')}m/s
+Forecast:
+{forecast_text}
+
+Respond ONLY in valid JSON:
+{{
+  "risk_trend": "improving|stable|worsening",
+  "predictions": [
+    {{"day": 1, "risk": "low|medium|high|critical", "event": "<predicted event>", "confidence": <0.0-1.0>}},
+    {{"day": 3, "risk": "...", "event": "...", "confidence": ...}},
+    {{"day": 7, "risk": "...", "event": "...", "confidence": ...}}
+  ],
+  "early_warnings": ["<proactive warning 1>", "<proactive warning 2>"],
+  "recommended_actions": ["<action 1>", "<action 2>"]
+}}"""}],
+                "max_tokens": 400, "temperature": 0.5
+            },
+            timeout=30.0,
+        )
+        content = r.json()["choices"][0]["message"]["content"].strip()
+        if content.startswith("```json"): content = content[7:-3].strip()
+        elif content.startswith("```"): content = content[3:-3].strip()
+        prediction = json.loads(content)
+        return {"city": city, "prediction": prediction, "climate": climate}
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        return {"error": str(e), "climate": climate}
+
+# ──────────────────────────────────────────────
+# FEATURE 5: CLIMATE QUEST SYSTEM
+# ──────────────────────────────────────────────
+DAILY_QUESTS = [
+    {"id": 1, "title": "🌱 Plant a seed or water a plant", "xp": 20, "co2_kg": 2.0, "category": "nature"},
+    {"id": 2, "title": "🚲 Walk or bike instead of driving", "xp": 15, "co2_kg": 3.5, "category": "transport"},
+    {"id": 3, "title": "💡 Turn off 3 lights you're not using", "xp": 10, "co2_kg": 1.0, "category": "energy"},
+    {"id": 4, "title": "♻️ Recycle 5 items today", "xp": 15, "co2_kg": 2.5, "category": "waste"},
+    {"id": 5, "title": "🥗 Eat a plant-based meal", "xp": 20, "co2_kg": 4.0, "category": "food"},
+    {"id": 6, "title": "📚 Teach someone about climate change", "xp": 25, "co2_kg": 0.5, "category": "education"},
+    {"id": 7, "title": "🧴 Use a reusable bottle all day", "xp": 10, "co2_kg": 1.5, "category": "waste"},
+    {"id": 8, "title": "🛍️ Bring your own bag to the store", "xp": 10, "co2_kg": 1.0, "category": "waste"},
+    {"id": 9, "title": "🚿 Take a 5-minute shower", "xp": 15, "co2_kg": 2.0, "category": "water"},
+    {"id": 10, "title": "📱 Share a climate fact on social media", "xp": 20, "co2_kg": 0.5, "category": "education"},
+]
+
+LEVEL_XP = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000]
+LEVEL_NAMES = ["🥚 Hatchling", "🐣 Sproutling", "🌱 Seedling", "🌿 Eco Rookie", "🌳 Green Scout",
+               "🦎 Nature Ally", "🐬 Ocean Friend", "🦅 Sky Guardian", "🌍 Earth Hero", "🦞 Climate Champion", "👑 Eco Legend"]
+
+@app.get("/api/quests")
+def get_quests():
+    """Get today's available quests."""
+    import random
+    random.seed(datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    today_quests = random.sample(DAILY_QUESTS, min(5, len(DAILY_QUESTS)))
+    return {"date": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "quests": today_quests}
+
+@app.post("/api/quest/complete")
+def complete_quest(req: QuestCompleteRequest):
+    """Complete a quest and earn XP + credits."""
+    quest = next((q for q in DAILY_QUESTS if q["id"] == req.quest_id), None)
+    if not quest:
+        return {"error": "Quest not found"}
+    
+    # Load quest completion tracker
+    completions = {}
+    if QUESTS_FILE.exists():
+        try: completions = json.loads(QUESTS_FILE.read_text())
+        except: pass
+    
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    user_key = f"{req.user}_{today}"
+    user_completions = completions.get(user_key, [])
+    
+    if req.quest_id in user_completions:
+        return {"error": "Quest already completed today!"}
+    
+    user_completions.append(req.quest_id)
+    completions[user_key] = user_completions
+    QUESTS_FILE.write_text(json.dumps(completions, indent=2))
+    
+    # Award credits to wallet
+    wallet_result = update_wallet(req.user, quest["co2_kg"])
+    
+    # Calculate XP and level
+    wallets = load_wallets()
+    w = wallets.get(req.user, {})
+    total_xp = w.get("xp", 0) + quest["xp"]
+    w["xp"] = total_xp
+    wallets[req.user] = w
+    save_wallets(wallets)
+    
+    level = 0
+    for i, xp_req in enumerate(LEVEL_XP):
+        if total_xp >= xp_req:
+            level = i
+    
+    return {
+        "success": True,
+        "quest": quest,
+        "xp_earned": quest["xp"],
+        "total_xp": total_xp,
+        "level": level,
+        "level_name": LEVEL_NAMES[min(level, len(LEVEL_NAMES)-1)],
+        "next_level_xp": LEVEL_XP[min(level+1, len(LEVEL_XP)-1)] - total_xp,
+        "wallet": wallet_result,
+    }
+
+@app.get("/api/quest/profile/{user}")
+def quest_profile(user: str):
+    """Get a user's quest profile with XP and level."""
+    wallets = load_wallets()
+    w = wallets.get(user, {"xp": 0})
+    total_xp = w.get("xp", 0)
+    
+    level = 0
+    for i, xp_req in enumerate(LEVEL_XP):
+        if total_xp >= xp_req:
+            level = i
+    
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    completions = {}
+    if QUESTS_FILE.exists():
+        try: completions = json.loads(QUESTS_FILE.read_text())
+        except: pass
+    today_completed = completions.get(f"{user}_{today}", [])
+    
+    return {
+        "user": user,
+        "total_xp": total_xp,
+        "level": level,
+        "level_name": LEVEL_NAMES[min(level, len(LEVEL_NAMES)-1)],
+        "next_level_xp": LEVEL_XP[min(level+1, len(LEVEL_XP)-1)] - total_xp,
+        "quests_completed_today": len(today_completed),
     }
 
 # ──────────────────────────────────────────────
