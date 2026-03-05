@@ -5,3 +5,5 @@ fastapi
 uvicorn
 httpx
 python-telegram-bot
+web3
+py-solc-x

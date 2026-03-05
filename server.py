@@ -729,7 +729,7 @@ def save_badges(badges: dict):
     BADGES_FILE.write_text(json.dumps(badges, indent=2))
 
 def check_milestones(user: str, wallet: dict):
-    """Check if the user earned any new badges."""
+    """Check if the user earned any new badges. Mint on-chain if possible."""
     badges = load_badges()
     user_badges = badges.get(user, [])
     earned_ids = {b["id"] for b in user_badges}
@@ -747,13 +747,45 @@ def check_milestones(user: str, wallet: dict):
             earned = True
         
         if earned:
+            token_id_str = f"GREENCLAW-{user[:8].upper()}-{m['id'].upper()}-{int(time.time())}"
             badge = {
                 "id": m["id"],
                 "name": m["name"],
                 "desc": m["desc"],
                 "earned_at": datetime.now(timezone.utc).isoformat(),
-                "token_id": f"GREENCLAW-{user[:8].upper()}-{m['id'].upper()}-{int(time.time())}",
+                "token_id": token_id_str,
             }
+            
+            # Attempt on-chain NFT mint
+            try:
+                from nft_minter import mint_badge as nft_mint, get_contract_address
+                contract_addr = get_contract_address()
+                if contract_addr and os.getenv("MINTER_PRIVATE_KEY"):
+                    nft_token_id = int(time.time() * 1000) % 2**32  # Unique numeric token ID
+                    # Mint to the deployer address (user's on-chain identity)
+                    from nft_minter import get_web3, get_account
+                    w3 = get_web3()
+                    account = get_account(w3)
+                    result = nft_mint(
+                        to_address=account.address,
+                        token_id=nft_token_id,
+                        metadata={"name": m["name"], "desc": m["desc"], "id": m["id"], "user": user, "co2": wallet.get("credits", 0)}
+                    )
+                    if result.get("success"):
+                        badge["on_chain"] = True
+                        badge["tx_hash"] = result["tx_hash"]
+                        badge["nft_token_id"] = nft_token_id
+                        badge["contract"] = result["contract"]
+                        badge["explorer_url"] = result["explorer_url"]
+                        print(f"🏅 NFT minted on-chain! TX: {result['tx_hash']}")
+                    else:
+                        badge["on_chain"] = False
+                        badge["mint_error"] = result.get("error", "Unknown")
+                        print(f"⚠️ NFT mint failed: {result.get('error')}")
+            except Exception as e:
+                badge["on_chain"] = False
+                print(f"⚠️ NFT minting skipped: {e}")
+            
             user_badges.append(badge)
             new_badges.append(badge)
     
@@ -773,6 +805,37 @@ def get_badges(user: str):
         "badges": user_badges,
         "available_milestones": [m for m in MILESTONES if m["id"] not in {b["id"] for b in user_badges}],
     }
+
+@app.get("/api/nft/status")
+def nft_status():
+    """Check NFT contract deployment status."""
+    try:
+        from nft_minter import get_contract_address, get_web3, get_account, EXPLORER
+        contract_addr = get_contract_address()
+        has_key = bool(os.getenv("MINTER_PRIVATE_KEY"))
+        
+        result = {
+            "contract_deployed": bool(contract_addr),
+            "contract_address": contract_addr,
+            "minter_key_set": has_key,
+            "network": "Somnia Shannon Testnet",
+            "chain_id": 50312,
+            "explorer": EXPLORER,
+        }
+        
+        if has_key:
+            try:
+                w3 = get_web3()
+                account = get_account(w3)
+                balance = w3.eth.get_balance(account.address)
+                result["minter_address"] = account.address
+                result["balance_stt"] = float(w3.from_wei(balance, 'ether'))
+            except:
+                pass
+        
+        return result
+    except Exception as e:
+        return {"error": str(e)}
 
 # ──────────────────────────────────────────────
 # FEATURE 3: MULTI-AGENT CLIMATE DEBATE
