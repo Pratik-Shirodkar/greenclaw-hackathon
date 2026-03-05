@@ -703,7 +703,23 @@ def get_wallet(user: str):
         "rank_icon": rank_icon,
         "rank_name": rank_name,
         "next_rank": next_rank,
+        "wallet_address": w.get("wallet_address"),
     }
+
+@app.post("/api/wallet/connect")
+def connect_wallet(user: str, address: str):
+    """Connect an Ethereum wallet address to a user for NFT minting."""
+    # Basic validation
+    if not address.startswith("0x") or len(address) != 42:
+        return {"error": "Invalid Ethereum address. Must be 0x followed by 40 hex characters."}
+    
+    wallets = load_wallets()
+    if user not in wallets:
+        wallets[user] = {"credits": 0, "lifetime_co2": 0, "actions_count": 0, "streak_days": 0, "last_action_date": ""}
+    wallets[user]["wallet_address"] = address
+    save_wallets(wallets)
+    
+    return {"success": True, "user": user, "wallet_address": address}
 
 # ──────────────────────────────────────────────
 # FEATURE 2: AI-GENERATED ACHIEVEMENT NFT BADGES
@@ -762,12 +778,15 @@ def check_milestones(user: str, wallet: dict):
                 contract_addr = get_contract_address()
                 if contract_addr and os.getenv("MINTER_PRIVATE_KEY"):
                     nft_token_id = int(time.time() * 1000) % 2**32  # Unique numeric token ID
-                    # Mint to the deployer address (user's on-chain identity)
-                    from nft_minter import get_web3, get_account
-                    w3 = get_web3()
-                    account = get_account(w3)
+                    # Mint to user's connected wallet, or deployer as fallback
+                    mint_to = wallet.get("wallet_address")
+                    if not mint_to:
+                        from nft_minter import get_web3, get_account
+                        w3 = get_web3()
+                        account = get_account(w3)
+                        mint_to = account.address
                     result = nft_mint(
-                        to_address=account.address,
+                        to_address=mint_to,
                         token_id=nft_token_id,
                         metadata={"name": m["name"], "desc": m["desc"], "id": m["id"], "user": user, "co2": wallet.get("credits", 0)}
                     )

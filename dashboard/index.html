@@ -449,6 +449,18 @@
                         </div>
                         <div class="progress-remaining" id="walletRemaining">25 credits to go</div>
                     </div>
+                    <div class="wallet-connect" id="walletConnectSection">
+                        <div class="wallet-connect-label">🔗 Link your wallet for on-chain NFTs:</div>
+                        <div class="wallet-connect-row">
+                            <input type="text" id="walletAddressInput" placeholder="0x..." class="wallet-address-input"
+                                maxlength="42">
+                            <button class="wallet-connect-btn" onclick="connectWallet()">Connect</button>
+                        </div>
+                        <div class="wallet-connected-info" id="walletConnectedInfo" style="display:none">
+                            <span class="wallet-connected-dot">●</span>
+                            <span id="walletLinkedAddress"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

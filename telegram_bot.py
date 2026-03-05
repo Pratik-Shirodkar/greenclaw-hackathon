@@ -384,9 +384,50 @@ async def cmd_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📋 Total actions: {data.get('actions_count', 0)}\n"
             f"🔥 Streak: {data.get('streak_days', 0)} days"
             f"{next_info}\n\n"
-            f"_Earn more by logging eco-actions with /log or sending photos!_"
         )
+        addr = data.get("wallet_address")
+        if addr:
+            msg += f"🔗 Wallet: `{addr[:6]}...{addr[-4:]}`\n\n"
+            msg += f"_NFTs mint directly to your wallet!_"
+        else:
+            msg += f"_Link your wallet: /connect 0xYourAddress_"
+        
         await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /connect <address> — Link wallet for NFT minting
+# ──────────────────────────────────────────────
+async def cmd_connect(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    if not context.args:
+        await update.message.reply_text(
+            "🔗 *Connect your wallet for NFT badges!*\n\n"
+            "Usage: `/connect 0xYourWalletAddress`\n\n"
+            "Your achievement badges will be minted as real ERC-721 NFTs on Ethereum Sepolia directly to your wallet!",
+            parse_mode="Markdown"
+        )
+        return
+    
+    address = context.args[0].strip()
+    if not address.startswith("0x") or len(address) != 42:
+        await update.message.reply_text("❌ Invalid address. Must be `0x` followed by 40 hex characters.", parse_mode="Markdown")
+        return
+    
+    try:
+        r = http.post(f"{API_BASE}/api/wallet/connect?user={user}&address={address}")
+        data = r.json()
+        if data.get("success"):
+            await update.message.reply_text(
+                f"✅ *Wallet Connected!*\n\n"
+                f"🔗 Address: `{address}`\n"
+                f"🏅 All future NFT badges will mint to this wallet!\n\n"
+                f"_View on Etherscan: https://sepolia.etherscan.io/address/{address}_",
+                parse_mode="Markdown"
+            )
+        else:
+            await update.message.reply_text(f"⚠️ {data.get('error', 'Connection failed')}")
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {e}")
 
@@ -561,6 +602,7 @@ def main():
     app.add_handler(CommandHandler("alerts", cmd_alerts))
     # Phase 15: Winning Features
     app.add_handler(CommandHandler("wallet", cmd_wallet))
+    app.add_handler(CommandHandler("connect", cmd_connect))
     app.add_handler(CommandHandler("badges", cmd_badges))
     app.add_handler(CommandHandler("debate", cmd_debate))
     app.add_handler(CommandHandler("predict", cmd_predict))

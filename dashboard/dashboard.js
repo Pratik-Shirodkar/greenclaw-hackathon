@@ -771,8 +771,38 @@ async function loadWallet() {
             document.getElementById('walletProgressBar').style.width = '100%';
             document.getElementById('walletRemaining').textContent = 'You are a legend!';
         }
+
+        // Show connected wallet address
+        if (data.wallet_address) {
+            const addr = data.wallet_address;
+            document.querySelector('.wallet-connect-row').style.display = 'none';
+            document.querySelector('.wallet-connect-label').textContent = '🔗 Wallet connected:';
+            document.getElementById('walletConnectedInfo').style.display = 'flex';
+            document.getElementById('walletLinkedAddress').textContent = `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+            document.getElementById('walletLinkedAddress').title = addr;
+        }
     } catch (e) {
         console.error('Wallet load error:', e);
+    }
+}
+
+async function connectWallet() {
+    const input = document.getElementById('walletAddressInput');
+    const address = input.value.trim();
+    if (!address.startsWith('0x') || address.length !== 42) {
+        alert('Invalid address. Must be 0x followed by 40 hex characters.');
+        return;
+    }
+    try {
+        const r = await fetch(`${API_BASE}/api/wallet/connect?user=${WALLET_USER}&address=${address}`, { method: 'POST' });
+        const data = await r.json();
+        if (data.success) {
+            loadWallet(); // Refresh to show connected state
+        } else {
+            alert(data.error || 'Connection failed');
+        }
+    } catch (e) {
+        alert('Error connecting wallet: ' + e.message);
     }
 }
 

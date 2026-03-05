@@ -2268,6 +2268,84 @@ body.kids-theme .bg-gradient {
     margin-top: 3px;
 }
 
+.wallet-connect {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.wallet-connect-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.wallet-connect-row {
+    display: flex;
+    gap: 6px;
+}
+
+.wallet-address-input {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xs);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.wallet-address-input:focus {
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+.wallet-connect-btn {
+    padding: 6px 14px;
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: var(--accent-green);
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.wallet-connect-btn:hover {
+    background: rgba(74, 222, 128, 0.25);
+    border-color: rgba(74, 222, 128, 0.5);
+}
+
+.wallet-connected-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    color: var(--accent-green);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.wallet-connected-dot {
+    color: var(--accent-green);
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
 /* ============================================
    TROPHY CASE CARD
    ============================================ */
