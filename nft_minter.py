@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-GreenClaw NFT Badge Minter — Somnia Shannon Testnet
+GreenClaw NFT Badge Minter — Ethereum Sepolia Testnet
 Deploys and mints ERC-721 achievement badges on-chain.
 
 Usage:
   1. Add MINTER_PRIVATE_KEY to .env (generate one or use existing)
-  2. Fund the wallet with testnet STT from https://testnet.somnia.network/
+  2. Fund the wallet with testnet ETH from Google Cloud Faucet
   3. Run: python nft_minter.py deploy   (one-time contract deployment)
   4. The server will auto-mint badges when milestones are hit
 """
@@ -20,11 +20,11 @@ from web3 import Web3
 load_dotenv(override=True)
 
 # ──────────────────────────────────────────────
-# Somnia Shannon Testnet Config
+# Ethereum Sepolia Testnet Config
 # ──────────────────────────────────────────────
-SOMNIA_RPC = "https://dream-rpc.somnia.network/"
-CHAIN_ID = 50312
-EXPLORER = "https://shannon.somnia.network"
+RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com"
+CHAIN_ID = 11155111
+EXPLORER = "https://sepolia.etherscan.io"
 
 PRIVATE_KEY = os.getenv("MINTER_PRIVATE_KEY", "")
 CONTRACT_FILE = Path(__file__).parent / "data" / "nft_contract.json"
@@ -100,9 +100,9 @@ CONTRACT_ABI = [
 ]
 
 def get_web3():
-    w3 = Web3(Web3.HTTPProvider(SOMNIA_RPC))
+    w3 = Web3(Web3.HTTPProvider(RPC_URL))
     if not w3.is_connected():
-        raise Exception(f"Cannot connect to Somnia Shannon at {SOMNIA_RPC}")
+        raise Exception(f"Cannot connect to Ethereum Sepolia at {RPC_URL}")
     return w3
 
 def get_account(w3):
@@ -120,23 +120,22 @@ def get_contract_address():
 
 def save_contract_address(address):
     CONTRACT_FILE.parent.mkdir(exist_ok=True)
-    CONTRACT_FILE.write_text(json.dumps({"address": address, "chain_id": CHAIN_ID, "network": "Somnia Shannon"}, indent=2))
+    CONTRACT_FILE.write_text(json.dumps({"address": address, "chain_id": CHAIN_ID, "network": "Ethereum Sepolia"}, indent=2))
 
 def deploy_contract():
-    """Deploy the GreenClawBadge ERC-721 contract to Somnia Shannon."""
-    print("🚀 Deploying GreenClawBadge NFT contract to Somnia Shannon...")
+    """Deploy the GreenClawBadge ERC-721 contract to Ethereum Sepolia."""
+    print("🚀 Deploying GreenClawBadge NFT contract to Ethereum Sepolia...")
     
     w3 = get_web3()
     account = get_account(w3)
     print(f"   Deployer: {account.address}")
     
     balance = w3.eth.get_balance(account.address)
-    print(f"   Balance: {w3.from_wei(balance, 'ether')} STT")
+    print(f"   Balance: {w3.from_wei(balance, 'ether')} ETH")
     
     if balance == 0:
-        print("❌ No STT balance! Get testnet tokens from:")
-        print("   https://testnet.somnia.network/")
-        print("   https://cloud.google.com/application/web3/faucet/somnia/shannon")
+        print("❌ No ETH balance! Get testnet tokens from:")
+        print("   https://cloud.google.com/application/web3/faucet/ethereum/sepolia")
         return None
     
     # Compile with solcx
@@ -187,7 +186,7 @@ def deploy_contract():
         return None
 
 def mint_badge(to_address: str, token_id: int, metadata: dict) -> dict:
-    """Mint an NFT badge to a user's address on Somnia Shannon."""
+    """Mint an NFT badge to a user's address on Ethereum Sepolia."""
     contract_address = get_contract_address()
     if not contract_address:
         return {"success": False, "error": "Contract not deployed. Run: python nft_minter.py deploy"}
@@ -292,7 +291,7 @@ if __name__ == "__main__":
         account = get_account(w3)
         balance = w3.eth.get_balance(account.address)
         print(f"💰 Wallet: {account.address}")
-        print(f"   Balance: {w3.from_wei(balance, 'ether')} STT")
-        print(f"   Faucet: https://testnet.somnia.network/")
+        print(f"   Balance: {w3.from_wei(balance, 'ether')} ETH")
+        print(f"   Faucet: https://cloud.google.com/application/web3/faucet/ethereum/sepolia")
     else:
         print(f"Unknown command: {cmd}")
