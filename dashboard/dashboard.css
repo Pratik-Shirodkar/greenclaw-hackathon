@@ -2726,3 +2726,387 @@ body.kids-theme .bg-gradient {
     background: rgba(74, 222, 128, 0.25);
     border-color: rgba(74, 222, 128, 0.5);
 }
+
+/* ============================================
+   Streak Calendar (Home Tab)
+   ============================================ */
+.streak-calendar {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.streak-day {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.1);
+    transition: all 0.2s ease;
+    cursor: default;
+    position: relative;
+}
+
+.streak-day.active-1 {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.streak-day.active-2 {
+    background: rgba(74, 222, 128, 0.4);
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+.streak-day.active-3 {
+    background: rgba(74, 222, 128, 0.65);
+    border-color: rgba(74, 222, 128, 0.5);
+}
+
+.streak-day.active-4 {
+    background: rgba(74, 222, 128, 0.85);
+    border-color: rgba(74, 222, 128, 0.6);
+}
+
+.streak-day:hover {
+    transform: scale(1.15);
+    z-index: 1;
+}
+
+.streak-day[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.85);
+    color: var(--text-primary);
+    font-size: 0.6rem;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.streak-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.streak-legend-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+}
+
+.streak-cell-sample {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--accent-green);
+}
+
+.streak-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+}
+
+.streak-stat {
+    text-align: center;
+}
+
+.streak-stat-val {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+}
+
+.streak-stat-lbl {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* ============================================
+   Carbon Breakdown Donut (Home Tab)
+   ============================================ */
+.breakdown-chart {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 16px;
+}
+
+.donut-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-total {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.donut-label {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.breakdown-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bkd-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.bkd-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.bkd-val {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.7rem;
+}
+
+/* ============================================
+   Leaderboard (Community Tab)
+   ============================================ */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lb-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s ease;
+}
+
+.lb-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lb-rank {
+    font-size: 1rem;
+    font-weight: 800;
+    width: 28px;
+    text-align: center;
+}
+
+.lb-rank-1 {
+    color: #fbbf24;
+}
+
+.lb-rank-2 {
+    color: #cbd5e1;
+}
+
+.lb-rank-3 {
+    color: #d97706;
+}
+
+.lb-name {
+    flex: 1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lb-score {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent-green);
+}
+
+.badge-rank {
+    background: rgba(251, 191, 36, 0.12) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+/* ============================================
+   Community Challenge (Community Tab)
+   ============================================ */
+.challenge-goal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(74, 222, 128, 0.05);
+    border: 1px solid rgba(74, 222, 128, 0.1);
+}
+
+.challenge-icon {
+    font-size: 2rem;
+}
+
+.challenge-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.challenge-text strong {
+    color: var(--accent-green);
+}
+
+.challenge-progress {
+    margin-bottom: 12px;
+}
+
+.challenge-bar-bg {
+    width: 100%;
+    height: 12px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.challenge-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--accent-green), #22d3ee);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.challenge-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.challenge-stats span:first-child {
+    font-weight: 700;
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+}
+
+.challenge-stats span:last-child {
+    color: var(--text-muted);
+}
+
+.challenge-participants {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.cp-avatars {
+    letter-spacing: -4px;
+    font-size: 0.9rem;
+}
+
+.badge-challenge {
+    background: rgba(34, 211, 238, 0.12) !important;
+    color: #22d3ee !important;
+    border-color: rgba(34, 211, 238, 0.3) !important;
+}
+
+/* ============================================
+   Activity Feed (Community Tab)
+   ============================================ */
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    animation: feedSlide 0.3s ease;
+}
+
+@keyframes feedSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.feed-icon {
+    font-size: 0.9rem;
+}
+
+.feed-text {
+    flex: 1;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.feed-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.feed-time {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    padding-top: 2px;
+}
+
+.feed-co2 {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--accent-green);
+    white-space: nowrap;
+}
