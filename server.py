@@ -49,11 +49,31 @@ active_alerts: list[dict] = []
 alert_cities = ["London", "Delhi", "Tokyo", "Mumbai", "Beijing"]
 
 # ──────────────────────────────────────────────
-# Lifespan (background alert monitor)
+# Telegram Bot Background Thread
+# ──────────────────────────────────────────────
+def _run_telegram_bot():
+    """Run the Telegram bot in a separate thread with its own event loop."""
+    try:
+        from telegram_bot import main as bot_main
+        bot_main()
+    except Exception as e:
+        print(f"⚠️ Telegram bot failed to start: {e}")
+
+# ──────────────────────────────────────────────
+# Lifespan (background alert monitor + telegram bot)
 # ──────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import threading
     task = asyncio.create_task(autonomous_pipeline())
+    # Start Telegram bot in background thread if token is available
+    bot_thread = None
+    if os.getenv("TELEGRAM_BOT_TOKEN"):
+        bot_thread = threading.Thread(target=_run_telegram_bot, daemon=True)
+        bot_thread.start()
+        print("🤖 Telegram bot started in background thread")
+    else:
+        print("ℹ️  TELEGRAM_BOT_TOKEN not set — Telegram bot disabled")
     yield
     task.cancel()
 
