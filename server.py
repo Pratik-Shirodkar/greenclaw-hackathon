@@ -54,8 +54,51 @@ alert_cities = ["London", "Delhi", "Tokyo", "Mumbai", "Beijing"]
 def _run_telegram_bot():
     """Run the Telegram bot in a separate thread with its own event loop."""
     try:
-        from telegram_bot import main as bot_main
-        bot_main()
+        import telegram_bot as tb
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        app = tb.Application.builder().token(tb.BOT_TOKEN).build()
+
+        # Register all command handlers (same as telegram_bot.main())
+        app.add_handler(tb.CommandHandler("start", tb.cmd_start))
+        app.add_handler(tb.CommandHandler("help", tb.cmd_start))
+        app.add_handler(tb.CommandHandler("climate", tb.cmd_climate))
+        app.add_handler(tb.CommandHandler("weather", tb.cmd_climate))
+        app.add_handler(tb.CommandHandler("risk", tb.cmd_risk))
+        app.add_handler(tb.CommandHandler("tips", tb.cmd_tips))
+        app.add_handler(tb.CommandHandler("advice", tb.cmd_tips))
+        app.add_handler(tb.CommandHandler("quiz", tb.cmd_quiz))
+        app.add_handler(tb.CommandHandler("log", tb.cmd_log))
+        app.add_handler(tb.CommandHandler("stats", tb.cmd_stats))
+        app.add_handler(tb.CommandHandler("alerts", tb.cmd_alerts))
+        app.add_handler(tb.CommandHandler("wallet", tb.cmd_wallet))
+        app.add_handler(tb.CommandHandler("connect", tb.cmd_connect))
+        app.add_handler(tb.CommandHandler("badges", tb.cmd_badges))
+        app.add_handler(tb.CommandHandler("debate", tb.cmd_debate))
+        app.add_handler(tb.CommandHandler("predict", tb.cmd_predict))
+        app.add_handler(tb.CommandHandler("quest", tb.cmd_quest))
+        app.add_handler(tb.CommandHandler("streak", tb.cmd_streak))
+        app.add_handler(tb.CommandHandler("leaderboard", tb.cmd_leaderboard))
+        app.add_handler(tb.CommandHandler("challenge", tb.cmd_challenge))
+        app.add_handler(tb.CommandHandler("feed", tb.cmd_feed))
+        app.add_handler(tb.CommandHandler("footprint", tb.cmd_footprint))
+        app.add_handler(tb.CommandHandler("history", tb.cmd_history))
+        app.add_handler(tb.CommandHandler("card", tb.cmd_card))
+        app.add_handler(tb.CommandHandler("policy", tb.cmd_policy))
+        app.add_handler(tb.CommandHandler("flood", tb.cmd_policy))
+        app.add_handler(tb.MessageHandler(tb.filters.PHOTO, tb.handle_photo))
+        app.add_handler(tb.MessageHandler(tb.filters.TEXT & ~tb.filters.COMMAND, tb.handle_message))
+
+        async def _start():
+            await app.initialize()
+            await app.start()
+            await app.updater.start_polling(allowed_updates=tb.Update.ALL_TYPES)
+            # Keep running forever
+            while True:
+                await asyncio.sleep(3600)
+
+        loop.run_until_complete(_start())
     except Exception as e:
         print(f"⚠️ Telegram bot failed to start: {e}")
 
