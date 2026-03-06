@@ -123,36 +123,37 @@ Then open:
 
 ## 🏆 Hackathon Bounty Alignment
 
+## 🏆 Hackathon Alignment
+
 | Track | Sponsor | How GreenClaw Qualifies |
 |---|---|---|
-| **AI Agents for Good** | FLock.io ($5,000) | ✅ OpenClaw + FLock API + open-source models + SDG 13 + multi-channel |
-| **General Bounty** | Z.AI ($4,000) | ✅ GLM-4.5 as core reasoning engine for risk analysis + GLM-4V for vision proof |
-| **Best Multi-Agent System** | Animoca ($500) | ✅ 6-agent coordinated system with named pipeline communication |
-| **Claw for Human** | Imperial ($500) | ✅ Showcases OpenClaw's multi-agent orchestration capabilities |
-| **Human for Claw** | Imperial ($500) | ✅ Kid-friendly edu-mode for children to interact with |
+| **AI Agents for Good** | FLock.io | ✅ OpenClaw + FLock API + open-source models + SDG 13 + multi-channel |
+| **Production-Ready AI** | Z.AI | ✅ GLM-4.5 as core reasoning engine for risk analysis + GLM-4V for vision proof |
+| **Best Multi-Agent System** | Animoca | ✅ 6-agent coordinated system with named pipeline communication |
+| **Claw for Human** | Imperial | ✅ Showcases OpenClaw's multi-agent orchestration capabilities |
+| **Human for Claw** | Imperial | ✅ Kid-friendly edu-mode for children to interact with |
 
 ---
 
-## 🏅 Z.AI Bounty Track Evidence
+## 🏅 Z.AI Integration Evidence
 
-**"Production-Ready AI Agents Powered by Z.AI"** ($4,000 track)
+Our architecture leverages Z.AI heavily to create a true autonomous system, rather than a simple chatbot:
 
 GreenClaw integrates Z.AI deeply into its core architecture:
-- **Deep Reasoning (Risk Analyzer):** Z.AI GLM-4.5's advanced reasoning analyzes complex, multi-variable climate data (Weather, AQI, Disasters). Live "Thinking Mode" visualization in the dashboard shows the model's reasoning chain
-- **Multimodal Vision (Telegram Bot):** Z.AI GLM-4V verifies field operation photos for proof-of-impact, bridging AI verification with blockchain rewards (Ethereum Sepolia NFT credentials)
-- **Autonomous 24/7 Operation:** Z.AI GLM powers the automated pipeline cycle — no human prompting required
+- **Deep Reasoning (Risk Analyzer):** Z.AI GLM-4.5's advanced reasoning analyzes complex, multi-variable climate data (Weather, AQI, Disasters). Live "Thinking Mode" visualization in the dashboard shows the model's reasoning chain.
+- **Multimodal Vision (Telegram Bot):** Z.AI GLM-4V verifies field operation photos for proof-of-impact, bridging AI verification with blockchain rewards (Ethereum Sepolia NFT credentials).
+- **Autonomous 24/7 Operation:** Z.AI GLM powers the automated pipeline cycle — no human prompting required.
 
 ---
 
-## 🏅 FLock Bounty Track Evidence
+## 🏅 FLock.io Integration Evidence
 
-**"FLock Track"** ($2,000 Gold prize)
+We strictly follow open-source and SDG frameworks for our advisory logic:
 
-GreenClaw strictly follows all FLock track requirements:
-1. **Autonomous Agents on OpenClaw:** The system runs as an autonomous multi-agent mesh using the OpenClaw framework
-2. **SDG-Aligned with Real-world Impact:** Directly targets **SDG 13 (Climate Action)** and **SDG 11 (Sustainable Cities)**. The Community Tracker measures real-world impact (CO₂ savings in kg)
-3. **FLock API & Open-source Models Only:** The Action Advisor, Carbon Footprint Calculator, and orchestrator routing are powered by FLock's open-source models (`qwen3-30b-a3b-instruct-2507`)
-4. **Multi-channel Deployment:** Web Dashboard + Telegram Bot with autonomous alert broadcasting
+1. **Autonomous Agents on OpenClaw:** The system runs as an autonomous multi-agent mesh using the OpenClaw framework.
+2. **SDG-Aligned with Real-world Impact:** Directly targets **SDG 13 (Climate Action)** and **SDG 11 (Sustainable Cities)**. The Community Tracker measures real-world impact (CO₂ savings in kg).
+3. **FLock API & Open-source Models Only:** The Action Advisor, Carbon Footprint Calculator, and orchestrator routing are powered by FLock's open-source models (`qwen3-30b-a3b-instruct-2507`).
+4. **Multi-channel Deployment:** Web Dashboard + Telegram Bot with autonomous alert broadcasting.
 
 ---
 
