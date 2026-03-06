@@ -14,6 +14,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="dashboard.css">
     <script src="//unpkg.com/globe.gl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -40,7 +41,7 @@
                 </button>
                 <button class="tab-btn" data-tab="intelligence" onclick="switchTab('intelligence')">
                     <span class="tab-icon">🌍</span>
-                    <span class="tab-label">Intelligence</span>
+                    <span class="tab-label">Climate Map</span>
                 </button>
                 <button class="tab-btn" data-tab="community" onclick="switchTab('community')">
                     <span class="tab-icon">👥</span>
@@ -51,7 +52,7 @@
         <div class="header-right">
             <div class="header-badges">
                 <span class="header-pill">🤖 Z.AI + FLock.io</span>
-                <span class="header-pill">🦞 OpenClaw</span>
+                <span class="header-pill">🦞 OP-CLAW</span>
             </div>
         </div>
     </header>
@@ -66,21 +67,21 @@
             <!-- Welcome Hero -->
             <section class="home-hero">
                 <div class="hero-greeting">
-                    <h2>Welcome back <span id="heroUsername">Eco-Warrior</span> 👋</h2>
-                    <p>Track your climate actions, earn $GREEN credits, and collect on-chain NFT badges.</p>
+                    <h2>Welcome, <span id="heroUsername">Eco Warrior</span> ⚡</h2>
+                    <p>Log eco-actions, earn green credits, and track your climate impact.</p>
                 </div>
                 <div class="hero-stats">
                     <div class="hero-stat">
                         <span class="hero-stat-value" id="heroCredits">0</span>
-                        <span class="hero-stat-label">$GREEN Credits</span>
+                        <span class="hero-stat-label">Green Credits</span>
                     </div>
                     <div class="hero-stat">
                         <span class="hero-stat-value" id="heroBadges">0</span>
-                        <span class="hero-stat-label">NFT Badges</span>
+                        <span class="hero-stat-label">Eco Badges</span>
                     </div>
                     <div class="hero-stat">
                         <span class="hero-stat-value" id="heroStreak">0</span>
-                        <span class="hero-stat-label">Day Streak 🔥</span>
+                        <span class="hero-stat-label">Day Streak ⚡</span>
                     </div>
                 </div>
             </section>
@@ -90,13 +91,13 @@
                 <!-- Carbon Credit Wallet -->
                 <div class="card card-wallet" id="walletCard">
                     <div class="card-header">
-                        <h2>🪙 Carbon Wallet</h2>
+                        <h2>🪙 Green Wallet</h2>
                         <span class="card-badge badge-wallet">$GREEN</span>
                     </div>
                     <div class="card-body">
                         <div class="wallet-hero">
                             <div class="wallet-rank-icon" id="walletRankIcon">🌱</div>
-                            <div class="wallet-rank-name" id="walletRankName">Seedling</div>
+                            <div class="wallet-rank-name" id="walletRankName">Node Novice</div>
                         </div>
                         <div class="wallet-balance">
                             <span class="wallet-amount" id="walletCredits">0</span>
@@ -105,33 +106,33 @@
                         <div class="wallet-stats-grid">
                             <div class="wallet-stat">
                                 <span class="wallet-stat-value" id="walletCO2">0</span>
-                                <span class="wallet-stat-label">kg CO₂ saved</span>
+                                <span class="wallet-stat-label">kg CO₂ offset</span>
                             </div>
                             <div class="wallet-stat">
                                 <span class="wallet-stat-value" id="walletStreak">0</span>
-                                <span class="wallet-stat-label">day streak 🔥</span>
+                                <span class="wallet-stat-label">uptime days ⚡</span>
                             </div>
                             <div class="wallet-stat">
                                 <span class="wallet-stat-value" id="walletActions">0</span>
-                                <span class="wallet-stat-label">actions</span>
+                                <span class="wallet-stat-label">field ops</span>
                             </div>
                         </div>
                         <div class="wallet-progress">
                             <div class="progress-label">
-                                <span>Next rank:</span>
-                                <span id="walletNextRank">🌿 Sprout</span>
+                                <span>Next clearance:</span>
+                                <span id="walletNextRank">🌿 Verified Operator</span>
                             </div>
                             <div class="progress-bar-bg">
                                 <div class="progress-bar-fill" id="walletProgressBar" style="width: 0%"></div>
                             </div>
-                            <div class="progress-remaining" id="walletRemaining">25 credits to go</div>
+                            <div class="progress-remaining" id="walletRemaining">25 credits to unlock</div>
                         </div>
                         <div class="wallet-connect" id="walletConnectSection">
-                            <div class="wallet-connect-label">🔗 Link your wallet for on-chain NFTs:</div>
+                            <div class="wallet-connect-label">🔗 Link Web3 wallet for credential minting:</div>
                             <div class="wallet-connect-row">
                                 <input type="text" id="walletAddressInput" placeholder="0x..."
                                     class="wallet-address-input" maxlength="42">
-                                <button class="wallet-connect-btn" onclick="connectWallet()">Connect</button>
+                                <button class="wallet-connect-btn" onclick="connectWallet()">Sync</button>
                             </div>
                             <div class="wallet-connected-info" id="walletConnectedInfo" style="display:none">
                                 <span class="wallet-connected-dot">●</span>
@@ -144,8 +145,8 @@
                 <!-- Trophy Case (Badges) -->
                 <div class="card card-trophies" id="trophyCard">
                     <div class="card-header">
-                        <h2>🏅 Trophy Case</h2>
-                        <span class="card-badge badge-nft">On-Chain NFTs</span>
+                        <h2>🏅 Eco Badges</h2>
+                        <span class="card-badge badge-nft">Ethereum Sepolia</span>
                     </div>
                     <div class="card-body">
                         <div class="trophy-grid" id="trophyGrid">
@@ -194,17 +195,17 @@
                 <!-- Quest Board -->
                 <div class="card card-quests" id="questCard">
                     <div class="card-header">
-                        <h2>🎯 Daily Quests</h2>
-                        <span class="card-badge badge-quest">XP System</span>
+                        <h2>🎯 Daily Challenges</h2>
+                        <span class="card-badge badge-quest">Earn XP</span>
                     </div>
                     <div class="card-body">
                         <div class="quest-hero">
-                            <span class="quest-level-icon" id="questLevelIcon">🥚</span>
-                            <span class="quest-level-name" id="questLevelName">Hatchling</span>
+                            <span class="quest-level-icon" id="questLevelIcon">📡</span>
+                            <span class="quest-level-name" id="questLevelName">SysAdmin L1</span>
                             <span class="quest-xp" id="questXP">0 XP</span>
                         </div>
                         <div class="quest-list" id="questList">
-                            <div class="quest-item"><span class="quest-title">Loading quests...</span></div>
+                            <div class="quest-item"><span class="quest-title">Loading telemetry...</span></div>
                         </div>
                     </div>
                 </div>
@@ -226,10 +227,10 @@
                             <div class="log-list" id="actionLog">
                                 <div class="log-item"><span class="log-icon">♻️</span><span>Recycled 5 plastic
                                         bottles</span><span class="log-co2">-2.5 kg</span></div>
-                                <div class="log-item"><span class="log-icon">🚲</span><span>Cycled to work</span><span
-                                        class="log-co2">-2.3 kg</span></div>
-                                <div class="log-item"><span class="log-icon">🥗</span><span>Plant-based
-                                        lunch</span><span class="log-co2">-2.5 kg</span></div>
+                                <div class="log-item"><span class="log-icon">🚲</span><span>Cycled to
+                                        work</span><span class="log-co2">-2.3 kg</span></div>
+                                <div class="log-item"><span class="log-icon">🥗</span><span>Had a plant-based
+                                        meal</span><span class="log-co2">-2.5 kg</span></div>
                             </div>
                         </div>
                     </div>
@@ -241,7 +242,7 @@
                 <!-- 30-Day Activity Streak -->
                 <div class="card card-streak" id="streakCard">
                     <div class="card-header">
-                        <h2>📅 Activity Streak</h2>
+                        <h2>📅 30-Day Streak</h2>
                         <span class="card-badge">Last 30 Days</span>
                     </div>
                     <div class="card-body">
@@ -249,17 +250,17 @@
                             <!-- 30 day cells generated by JS -->
                         </div>
                         <div class="streak-legend">
-                            <span class="streak-legend-label">Less</span>
+                            <span class="streak-legend-label">Inactive</span>
                             <span class="streak-cell-sample" style="opacity:0.15"></span>
                             <span class="streak-cell-sample" style="opacity:0.35"></span>
                             <span class="streak-cell-sample" style="opacity:0.6"></span>
                             <span class="streak-cell-sample" style="opacity:0.85"></span>
                             <span class="streak-cell-sample" style="opacity:1"></span>
-                            <span class="streak-legend-label">More</span>
+                            <span class="streak-legend-label">Active</span>
                         </div>
                         <div class="streak-stats">
                             <div class="streak-stat"><span class="streak-stat-val" id="streakTotal">0</span><span
-                                    class="streak-stat-lbl">Total Actions</span></div>
+                                    class="streak-stat-lbl">Actions Logged</span></div>
                             <div class="streak-stat"><span class="streak-stat-val" id="streakBest">0</span><span
                                     class="streak-stat-lbl">Best Streak</span></div>
                             <div class="streak-stat"><span class="streak-stat-val" id="streakActive">0</span><span
@@ -271,7 +272,7 @@
                 <!-- Carbon Breakdown -->
                 <div class="card card-breakdown" id="breakdownCard">
                     <div class="card-header">
-                        <h2>🥧 Carbon Breakdown</h2>
+                        <h2>🥧 CO₂ Savings Breakdown</h2>
                         <span class="card-badge">By Category</span>
                     </div>
                     <div class="card-body">
@@ -306,6 +307,79 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Row 4: Carbon Footprint Calculator -->
+            <section class="dashboard-row">
+                <div class="card card-full-width card-calculator" id="calculatorCard">
+                    <div class="card-header">
+                        <h2>🧮 Carbon Footprint Calculator</h2>
+                        <span class="card-badge badge-flock">FLock.io AI Tips</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="calc-form">
+                            <div class="calc-field">
+                                <label>🚗 Transport</label>
+                                <select id="calcTransport">
+                                    <option value="car_petrol">Car (Petrol)</option>
+                                    <option value="car_diesel">Car (Diesel)</option>
+                                    <option value="car_electric">Car (Electric)</option>
+                                    <option value="public_transit">Public Transit</option>
+                                    <option value="bike_walk">Bike / Walk</option>
+                                    <option value="motorcycle">Motorcycle</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label>🥗 Diet</label>
+                                <select id="calcDiet">
+                                    <option value="mixed" selected>Mixed</option>
+                                    <option value="meat_heavy">Meat Heavy</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label>⚡ Home Energy</label>
+                                <select id="calcEnergy">
+                                    <option value="gas" selected>Gas</option>
+                                    <option value="electric">Electric</option>
+                                    <option value="renewable">Renewable</option>
+                                    <option value="mixed">Mixed</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label>✈️ Flights / Year</label>
+                                <select id="calcFlights">
+                                    <option value="occasional" selected>1-3 flights</option>
+                                    <option value="frequent">4+ flights</option>
+                                    <option value="rare">Less than 1</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                            <div class="calc-field">
+                                <label>👥 Household Size</label>
+                                <input type="number" id="calcHousehold" value="1" min="1" max="10">
+                            </div>
+                            <button class="calc-submit" onclick="calculateFootprint()">Calculate My Footprint</button>
+                        </div>
+                        <div class="calc-results" id="calcResults" style="display:none">
+                            <div class="calc-total">
+                                <div class="calc-total-value" id="calcTotalKg">--</div>
+                                <div class="calc-total-label">kg CO₂ / year</div>
+                                <div class="calc-rating" id="calcRating"></div>
+                            </div>
+                            <div class="calc-comparison">
+                                <div class="calc-cmp" id="calcVsUk"></div>
+                                <div class="calc-cmp" id="calcVsGlobal"></div>
+                            </div>
+                            <div class="calc-breakdown" id="calcBreakdown"></div>
+                            <div class="calc-strategies">
+                                <h3>💡 AI Reduction Strategies</h3>
+                                <div id="calcStrategies"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- ═══════════════════════════════════════════ -->
@@ -329,7 +403,7 @@
             <section class="dashboard-row">
                 <div class="card card-full-width globe-card" id="globeCard">
                     <div class="card-header globe-header">
-                        <h2>🌍 Global Threat Map</h2>
+                        <h2>🌍 Global Climate Map</h2>
                         <span class="card-badge pulse-badge"
                             style="background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4);">LIVE
                             SATELLITE</span>
@@ -391,6 +465,44 @@
                         <div class="disaster-list" id="disasterList">
                             <div class="loading-spinner">
                                 <div class="spinner"></div><span>Scanning NASA EONET...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Climate Trend Chart -->
+            <section class="dashboard-row">
+                <div class="card card-full-width card-trends" id="trendCard">
+                    <div class="card-header">
+                        <h2>📈 Climate Trends</h2>
+                        <span class="card-badge">Historical Data</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="trend-chart-container">
+                            <canvas id="trendChart" height="200"></canvas>
+                        </div>
+                        <div class="trend-empty" id="trendEmpty" style="display:none">
+                            <p>📊 No historical data yet. Data is recorded each time you search a city or when the
+                                autonomous pipeline runs. Check back soon!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Policy & Flood Alerts -->
+            <section class="dashboard-row">
+                <div class="card card-full-width card-policy" id="policyCard">
+                    <div class="card-header">
+                        <h2>🏛️ Government Flood & Policy Alerts</h2>
+                        <span class="card-badge"
+                            style="background:rgba(251,191,36,0.15);color:#fbbf24;border-color:rgba(251,191,36,0.3)">UK
+                            Environment Agency</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-alerts-list" id="policyAlertsList">
+                            <div class="loading-spinner">
+                                <div class="spinner"></div><span>Checking government alerts...</span>
                             </div>
                         </div>
                     </div>
@@ -477,35 +589,37 @@
         </div>
 
         <!-- ═══════════════════════════════════════════ -->
-        <!-- TAB 3: COMMUNITY — Collective Impact         -->
+        <!-- TAB 3: NODE NETWORK — Distributed Protocol   -->
         <!-- ═══════════════════════════════════════════ -->
         <div class="tab-content" id="tab-community">
             <section class="dashboard-row">
                 <!-- Community Tracker -->
                 <div class="card card-community" id="communityCard">
                     <div class="card-header">
-                        <h2>📊 Community Impact</h2><span class="card-badge">Live Tracker</span>
+                        <h2>📊 Global Network Ops</h2><span class="card-badge">Live Tracker</span>
                     </div>
                     <div class="card-body">
                         <div class="impact-stats">
                             <div class="stat-circle"><span class="stat-number" id="totalCO2">127.4</span><span
-                                    class="stat-unit">kg CO₂</span><span class="stat-label">Total Saved</span></div>
+                                    class="stat-unit">kg CO₂</span><span class="stat-label">Total Avoided</span></div>
                         </div>
                         <div class="equivalents-grid">
                             <div class="equiv-item"><span class="equiv-icon">🌳</span><span class="equiv-value"
-                                    id="treesEquiv">5.8</span><span class="equiv-label">Trees Planted</span></div>
+                                    id="treesEquiv">5.8</span><span class="equiv-label">Trees Simulated</span></div>
                             <div class="equiv-item"><span class="equiv-icon">🚗</span><span class="equiv-value"
-                                    id="carEquiv">607</span><span class="equiv-label">Car km Avoided</span></div>
+                                    id="carEquiv">607</span><span class="equiv-label">ICE-km Bypassed</span></div>
                             <div class="equiv-item"><span class="equiv-icon">✈️</span><span class="equiv-value"
-                                    id="flightEquiv">0.51</span><span class="equiv-label">Flights Offset</span></div>
+                                    id="flightEquiv">0.51</span><span class="equiv-label">Aero-routes Offset</span>
+                            </div>
                         </div>
+                        <button class="share-impact-btn" onclick="shareImpact()">📤 Broadcast Telemetry</button>
                     </div>
                 </div>
 
                 <!-- Action Advisor -->
                 <div class="card card-advisor" id="advisorCard">
                     <div class="card-header">
-                        <h2>💚 Action Advisor</h2><span class="card-badge badge-flock">FLock.io</span>
+                        <h2>💚 Algorithmic Directives</h2><span class="card-badge badge-flock">FLock.io</span>
                     </div>
                     <div class="card-body">
                         <div class="tip-carousel" id="tipCarousel">
@@ -552,12 +666,12 @@
                 <!-- Leaderboard -->
                 <div class="card card-leaderboard" id="leaderboardCard">
                     <div class="card-header">
-                        <h2>🏆 Leaderboard</h2>
-                        <span class="card-badge badge-rank">Top Warriors</span>
+                        <h2>🏆 Priority Nodes</h2>
+                        <span class="card-badge badge-rank">Top Operators</span>
                     </div>
                     <div class="card-body">
                         <div class="leaderboard-list" id="leaderboardList">
-                            <div class="lb-item lb-skeleton"><span>Loading...</span></div>
+                            <div class="lb-item lb-skeleton"><span>Syncing nodes...</span></div>
                         </div>
                     </div>
                 </div>
@@ -565,8 +679,8 @@
                 <!-- Community Challenge -->
                 <div class="card card-challenge" id="challengeCard">
                     <div class="card-header">
-                        <h2>🎯 Weekly Challenge</h2>
-                        <span class="card-badge badge-challenge">Group Goal</span>
+                        <h2>🎯 Protocol Target</h2>
+                        <span class="card-badge badge-challenge">Global Goal</span>
                     </div>
                     <div class="card-body">
                         <div class="challenge-goal">
@@ -593,12 +707,12 @@
                 <div class="card card-feed" id="feedCard">
                     <div class="card-header">
                         <h2>📢 Activity Feed</h2>
-                        <span class="card-badge">Live</span>
+                        <span class="card-badge">Live Feed</span>
                     </div>
                     <div class="card-body">
                         <div class="feed-list" id="feedList">
                             <div class="feed-item"><span class="feed-time">now</span><span class="feed-text">Waiting for
-                                    activity...</span></div>
+                                    community actions...</span></div>
                         </div>
                     </div>
                 </div>
@@ -607,13 +721,14 @@
             <!-- Row 3: Quiz -->
             <section class="dashboard-row">
                 <!-- Edu Mode -->
-                <div class="card card-edu" id="eduCard">
+                <div class="card card-full-width" id="eduCard">
                     <div class="card-header">
-                        <h2>🎓 Climate Quiz</h2><span class="card-badge badge-kids">Interactive</span>
+                        <h2>🎓 Climate Quiz</h2><span class="card-badge badge-kids">Learn & Earn</span>
                     </div>
                     <div class="card-body">
                         <div class="quiz-section">
-                            <div class="quiz-question" id="quizQuestion">🌍 What gas do trees breathe in?</div>
+                            <div class="quiz-question" id="quizQuestion">Test your climate knowledge: What gas do
+                                trees breathe in?</div>
                             <div class="quiz-options" id="quizOptions">
                                 <button class="quiz-option" onclick="checkAnswer(this, false)">A) Oxygen</button>
                                 <button class="quiz-option correct" onclick="checkAnswer(this, true)">B) Carbon
@@ -644,17 +759,17 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-left">
-            <span>🌍🦞 GreenClaw — UK AI Agent Hackathon EP4 × OpenClaw</span>
+            <span>🌍🦞 GreenClaw — AI Climate Dashboard</span>
         </div>
         <div class="footer-center">
             <span class="tech-pill">OpenClaw</span>
             <span class="tech-pill">Z.AI GLM-4.5</span>
             <span class="tech-pill">FLock.io</span>
-            <span class="tech-pill">OpenWeatherMap</span>
+            <span class="tech-pill">Ethereum Sepolia</span>
             <span class="tech-pill">NASA EONET</span>
         </div>
         <div class="footer-right">
-            <span>SDG 13 · Climate Action 🌱</span>
+            <span>All Systems Online 🟢</span>
         </div>
     </footer>
 
@@ -664,24 +779,41 @@
     <!-- Chat Widget -->
     <div class="chat-bubble" id="chatBubble" onclick="toggleChat()">
         <span class="chat-bubble-icon">💬</span>
-        <span class="chat-bubble-label">Ask GreenClaw</span>
+        <span class="chat-bubble-label">Ask AI</span>
     </div>
     <div class="chat-panel" id="chatPanel">
         <div class="chat-header">
             <div class="chat-header-left">
                 <span class="chat-header-icon">🌍🦞</span>
                 <div>
-                    <div class="chat-header-title">GreenClaw Agent</div>
-                    <div class="chat-header-sub">Powered by Z.AI + FLock.io</div>
+                    <div class="chat-header-title">GreenClaw AI</div>
+                    <div class="chat-header-sub">Climate Assistant</div>
                 </div>
             </div>
             <button class="chat-close" onclick="toggleChat()">✕</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="Ask about weather, risks, eco-tips..."
+            <input type="text" id="chatInput" placeholder="Ask about climate, weather, or eco-tips..."
                 onkeydown="if(event.key==='Enter')sendChat()">
             <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <!-- Operator Tour Overlay -->
+    <div id="tourOverlay" class="tour-overlay" style="display:none;"></div>
+    <div id="tourTooltip" class="tour-tooltip" style="display:none;">
+        <div class="tour-header">
+            <span class="tour-icon">⚡</span>
+            <span class="tour-title">WELCOME TOUR</span>
+        </div>
+        <div class="tour-body" id="tourText">Let us show you around!</div>
+        <div class="tour-footer">
+            <span class="tour-progress" id="tourProgress">1/4</span>
+            <div class="tour-actions">
+                <button class="tour-btn tour-btn-skip" onclick="skipTour()">Skip</button>
+                <button class="tour-btn tour-btn-next" onclick="nextTourStep()">Next ⟶</button>
+            </div>
         </div>
     </div>
 

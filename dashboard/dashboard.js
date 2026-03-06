@@ -245,20 +245,25 @@ function updateGlobeData(data) {
 // City Data (LIVE API)
 // ============================================
 async function loadCityData() {
-    const input = document.getElementById('citySearch');
-    const city = input.value.trim() || currentCity;
-    currentCity = city;
+    const cityInput = document.getElementById('citySearch');
+    currentCity = cityInput ? cityInput.value.trim() || 'London' : 'London';
 
     try {
-        const res = await fetch(`${API_BASE}/api/climate/${encodeURIComponent(city)}`);
+        const res = await fetch(`${API_BASE}/api/climate/${encodeURIComponent(currentCity)}`);
         const data = await res.json();
-        updateWeather(data.weather, city);
-        updateAQI(data.aqi);
-        loadDisasters(data.disasters);
-        updateGlobeData(data); // Feed to Threat Map
-        resetRiskPanel();
+
+        if (data.weather) updateWeather(data.weather, data.city || currentCity);
+        if (data.aqi) updateAQI(data.aqi);
+        if (data.disasters) {
+            loadDisasters(data.disasters);
+            if (globeInitialized) updateGlobeData(data);
+        }
+
+        // Load new features for this city
+        loadTrendChart(currentCity);
+        loadPolicyAlerts(currentCity);
     } catch (err) {
-        console.error('Failed to load climate data:', err);
+        console.error('Failed to load city data:', err);
     }
 }
 
@@ -526,15 +531,25 @@ async function logAction() {
         });
         const entry = await res.json();
 
-        // Add to log
-        const log = document.getElementById('actionLog');
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        item.innerHTML = `<span class="log-icon">${entry.emoji}</span><span>${action}</span><span class="log-co2">-${entry.co2_kg} kg</span>`;
-        log.insertBefore(item, log.firstChild);
+        // Handle rejected (harmful) actions
+        if (entry.rejected) {
+            const log = document.getElementById('actionLog');
+            const item = document.createElement('div');
+            item.className = 'log-item log-rejected';
+            item.innerHTML = `<span class="log-icon">${entry.emoji}</span><span style="color:#f87171">${entry.message}</span>`;
+            log.insertBefore(item, log.firstChild);
+            setTimeout(() => item.remove(), 5000);
+        } else {
+            // Add to log
+            const log = document.getElementById('actionLog');
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.innerHTML = `<span class="log-icon">${entry.emoji}</span><span>${action}</span><span class="log-co2">-${entry.co2_kg} kg</span>`;
+            log.insertBefore(item, log.firstChild);
 
-        // Refresh stats
-        await refreshCommunityStats();
+            // Refresh stats
+            await refreshCommunityStats();
+        }
     } catch (err) {
         console.error('Failed to log action:', err);
     }
@@ -589,7 +604,7 @@ function showAlertToast(alert) {
     container.appendChild(toast);
 
     // Auto-remove after 30s
-    setTimeout(() => toast.remove(), 30000);
+    setTimeout(() => toast.remove(), 10000);
 }
 
 // ============================================
@@ -620,7 +635,7 @@ function toggleChat() {
         // Show welcome on first open
         const msgs = document.getElementById('chatMessages');
         if (msgs.children.length === 0) {
-            addChatMessage('bot', '👋 Hey! I\'m **GreenClaw** 🌍🦞\n\nAsk me about weather, climate risks, eco-tips, or say **help**!');
+            addChatMessage('bot', '📡 System: **GreenClaw Core Agent** Online\n\nAwaiting operational query. Transmit your request regarding atmospheric telemetry, algorithmic directives, or protocol status.');
         }
     }
 }
@@ -664,6 +679,7 @@ const skillIcons = {
     'action-advisor': '💚',
     'community-tracker': '📊',
     'edu-mode': '🎮',
+    'carbon-calculator': '🧮',
 };
 
 function addChatMessage(role, html) {
@@ -717,11 +733,11 @@ function checkAnswer(btn, isCorrect) {
     });
     if (isCorrect) {
         btn.classList.add('selected-correct');
-        document.getElementById('quizResult').innerHTML = '🎉 AMAZING! You\'re a true Earth Expert! ⭐';
+        document.getElementById('quizResult').innerHTML = '✅ METRIC VERIFIED! Agent aligned with baseline data. ⭐';
         document.getElementById('quizResult').style.color = '#4ade80';
     } else {
         btn.classList.add('selected-wrong');
-        document.getElementById('quizResult').innerHTML = '💪 Not quite, but great try! Keep learning!';
+        document.getElementById('quizResult').innerHTML = '⚠️ ALIGNMENT FAILURE! Agent diverted from baseline. Re-calibrate.';
         document.getElementById('quizResult').style.color = '#fb923c';
     }
     document.getElementById('nextQuestionBtn').style.display = 'block';
@@ -782,21 +798,22 @@ async function loadWallet() {
         const r = await fetch(`${API_BASE}/api/wallet/${WALLET_USER}`);
         const data = await r.json();
         document.getElementById('walletRankIcon').textContent = data.rank_icon || '🌱';
-        document.getElementById('walletRankName').textContent = data.rank_name || 'Seedling';
+        document.getElementById('walletRankName').textContent = data.rank_name || 'Beginner';
         document.getElementById('walletCredits').textContent = data.credits || 0;
         document.getElementById('walletCO2').textContent = data.lifetime_co2_kg || 0;
         document.getElementById('walletStreak').textContent = data.streak_days || 0;
         document.getElementById('walletActions').textContent = data.actions_count || 0;
 
         if (data.next_rank) {
-            document.getElementById('walletNextRank').textContent = `${data.next_rank.icon} ${data.next_rank.name}`;
+            let nextRankName = data.next_rank.name === 'Sprout' ? 'Verified Operator' : data.next_rank.name === 'Guardian' ? 'Protocol Securer' : data.next_rank.name;
+            document.getElementById('walletNextRank').textContent = `${data.next_rank.icon} ${nextRankName}`;
             const pct = Math.min(100, ((data.credits / data.next_rank.threshold) * 100));
             document.getElementById('walletProgressBar').style.width = `${pct}%`;
-            document.getElementById('walletRemaining').textContent = `${data.next_rank.remaining} credits to go`;
+            document.getElementById('walletRemaining').textContent = `${data.next_rank.remaining} credits to next level`;
         } else {
-            document.getElementById('walletNextRank').textContent = '🦞 MAX RANK!';
+            document.getElementById('walletNextRank').textContent = '🦞 MAX LEVEL';
             document.getElementById('walletProgressBar').style.width = '100%';
-            document.getElementById('walletRemaining').textContent = 'You are a legend!';
+            document.getElementById('walletRemaining').textContent = 'You reached the highest level!';
         }
 
         // Update hero stats on Home tab
@@ -963,42 +980,25 @@ function buildStreakCalendar() {
     if (!calendar) return;
     calendar.innerHTML = '';
 
-    // Generate 30 days of simulated activity based on wallet data
+    // Start clean — all 30 days empty (no fake data)
     const today = new Date();
-    const days = [];
-    let totalActions = 0;
-    let bestStreak = 0;
-    let currentStreak = 0;
-    let activeDays = 0;
 
     for (let i = 29; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        // Simulate activity levels by using a seeded pattern
-        const dayOfWeek = d.getDay();
-        const seed = (d.getDate() * 7 + d.getMonth() * 31) % 10;
-        let level = 0;
-        if (i <= 1) level = Math.min(4, Math.max(1, seed % 4 + 1)); // Recent days always active
-        else if (seed > 3) level = Math.min(4, (seed % 4) + 1);
-
-        const actions = level > 0 ? level : 0;
-        totalActions += actions;
-        if (level > 0) { activeDays++; currentStreak++; bestStreak = Math.max(bestStreak, currentStreak); }
-        else { currentStreak = 0; }
-
         const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const cell = document.createElement('div');
-        cell.className = `streak-day${level > 0 ? ` active-${level}` : ''}`;
-        cell.title = `${dateStr}: ${actions} action${actions !== 1 ? 's' : ''}`;
+        cell.className = 'streak-day';
+        cell.title = `${dateStr}: 0 actions`;
         calendar.appendChild(cell);
     }
 
     const streakTotal = document.getElementById('streakTotal');
     const streakBest = document.getElementById('streakBest');
     const streakActive = document.getElementById('streakActive');
-    if (streakTotal) streakTotal.textContent = totalActions;
-    if (streakBest) streakBest.textContent = bestStreak;
-    if (streakActive) streakActive.textContent = activeDays;
+    if (streakTotal) streakTotal.textContent = 0;
+    if (streakBest) streakBest.textContent = 0;
+    if (streakActive) streakActive.textContent = 0;
 }
 
 // ============================================
@@ -1148,3 +1148,374 @@ function getTimeAgo(timestamp) {
         return `${Math.floor(diff / 86400)}d ago`;
     } catch { return 'recently'; }
 }
+
+// ============================================
+// Feature 6: Carbon Footprint Calculator
+// ============================================
+async function calculateFootprint() {
+    const data = {
+        transport: document.getElementById('calcTransport').value,
+        diet: document.getElementById('calcDiet').value,
+        energy: document.getElementById('calcEnergy').value,
+        flights: document.getElementById('calcFlights').value,
+        household: parseInt(document.getElementById('calcHousehold').value) || 1,
+    };
+
+    const btn = document.querySelector('.calc-submit');
+    btn.textContent = '⏳ Calculating...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/carbon-footprint`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const result = await res.json();
+
+        document.getElementById('calcResults').style.display = 'block';
+        document.getElementById('calcTotalKg').textContent = result.total_kg.toLocaleString();
+        document.getElementById('calcRating').textContent = result.rating;
+
+        const ukSign = result.vs_uk_pct >= 0 ? '+' : '';
+        const globalSign = result.vs_global_pct >= 0 ? '+' : '';
+        document.getElementById('calcVsUk').innerHTML = `🇬🇧 ${ukSign}${result.vs_uk_pct}% vs UK avg (${result.uk_avg.toLocaleString()} kg)`;
+        document.getElementById('calcVsGlobal').innerHTML = `🌍 ${globalSign}${result.vs_global_pct}% vs Global avg (${result.global_avg.toLocaleString()} kg)`;
+
+        // Breakdown bars
+        const breakdown = document.getElementById('calcBreakdown');
+        breakdown.innerHTML = '';
+        const colors = { transport: '#4ade80', diet: '#60a5fa', energy: '#a78bfa', flights: '#fbbf24' };
+        for (const [key, val] of Object.entries(result.breakdown)) {
+            breakdown.innerHTML += `
+                <div class="calc-bar-item">
+                    <div class="calc-bar-label">${val.label}</div>
+                    <div class="calc-bar-bg"><div class="calc-bar-fill" style="width:${val.pct}%;background:${colors[key]}"></div></div>
+                    <div class="calc-bar-val">${val.kg.toLocaleString()} kg (${val.pct}%)</div>
+                </div>`;
+        }
+
+        // Strategies
+        const strategies = document.getElementById('calcStrategies');
+        strategies.innerHTML = '';
+        const diffIcons = { easy: '🟢', medium: '🟡', hard: '🔴' };
+        (result.strategies || []).forEach(s => {
+            strategies.innerHTML += `
+                <div class="calc-strategy">
+                    <span class="calc-strat-diff">${diffIcons[s.difficulty] || '⚪'}</span>
+                    <span class="calc-strat-action">${s.action}</span>
+                    <span class="calc-strat-save">saves ~${s.savings_kg} kg/yr</span>
+                </div>`;
+        });
+    } catch (err) {
+        console.error('Footprint calc error:', err);
+    }
+
+    btn.textContent = 'Calculate My Footprint';
+    btn.disabled = false;
+}
+
+// ============================================
+// Feature 7: Historical Climate Trends
+// ============================================
+let trendChartInstance = null;
+
+async function loadTrendChart(city) {
+    try {
+        const res = await fetch(`${API_BASE}/api/climate/history/${encodeURIComponent(city)}`);
+        const data = await res.json();
+
+        const canvas = document.getElementById('trendChart');
+        const emptyMsg = document.getElementById('trendEmpty');
+        if (!canvas) return;
+
+        if (!data.history || data.history.length === 0) {
+            canvas.style.display = 'none';
+            if (emptyMsg) emptyMsg.style.display = 'block';
+            return;
+        }
+        canvas.style.display = 'block';
+        if (emptyMsg) emptyMsg.style.display = 'none';
+
+        const labels = data.history.map(h => {
+            const d = new Date(h.timestamp);
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        });
+        const aqiData = data.history.map(h => h.aqi);
+        const tempData = data.history.map(h => h.temp);
+
+        if (trendChartInstance) trendChartInstance.destroy();
+
+        trendChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'AQI',
+                        data: aqiData,
+                        borderColor: '#f87171',
+                        backgroundColor: 'rgba(248,113,113,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Temp (°C)',
+                        data: tempData,
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96,165,250,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } },
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#475569', maxTicksLimit: 8 },
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                    },
+                    y: {
+                        type: 'linear', position: 'left',
+                        title: { display: true, text: 'AQI', color: '#f87171' },
+                        ticks: { color: '#f87171' },
+                        grid: { color: 'rgba(255,255,255,0.04)' },
+                    },
+                    y1: {
+                        type: 'linear', position: 'right',
+                        title: { display: true, text: '°C', color: '#60a5fa' },
+                        ticks: { color: '#60a5fa' },
+                        grid: { drawOnChartArea: false },
+                    },
+                },
+            },
+        });
+    } catch (err) {
+        console.error('Trend chart error:', err);
+    }
+}
+
+// ============================================
+// Feature 8: Shareable Impact Cards
+// ============================================
+function shareImpact() {
+    window.open(`${API_BASE}/api/impact-card/${WALLET_USER}`, '_blank');
+}
+
+// ============================================
+// Feature 9: Policy & Flood Alerts
+// ============================================
+async function loadPolicyAlerts(city) {
+    const list = document.getElementById('policyAlertsList');
+    if (!list) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/policy-alerts/${encodeURIComponent(city)}`);
+        const data = await res.json();
+
+        if (!data.alerts || data.alerts.length === 0) {
+            list.innerHTML = '<div class="policy-empty">✅ No active flood or policy warnings for this area.</div>';
+            return;
+        }
+
+        list.innerHTML = '';
+        data.alerts.forEach(alert => {
+            const el = document.createElement('div');
+            el.className = `policy-alert-item severity-${alert.severity}`;
+            el.innerHTML = `
+                <div class="policy-alert-header">
+                    <span class="policy-severity">${alert.severity_icon} ${alert.severity_label}</span>
+                    <span class="policy-area">${alert.area || 'UK'}</span>
+                </div>
+                <div class="policy-desc">${alert.description}</div>
+                ${alert.message ? `<div class="policy-msg">${alert.message.substring(0, 200)}${alert.message.length > 200 ? '...' : ''}</div>` : ''}
+                ${alert.time_raised ? `<div class="policy-time">Raised: ${new Date(alert.time_raised).toLocaleString()}</div>` : ''}
+            `;
+            list.appendChild(el);
+        });
+    } catch (err) {
+        list.innerHTML = '<div class="policy-empty">⚠️ Could not fetch government alerts.</div>';
+    }
+}
+
+// ============================================
+// Operator Guided Tour (Initialization Sequence)
+// ============================================
+const tourSteps = [
+    {
+        target: '#walletCard',
+        title: 'GREEN WALLET',
+        text: 'Track your green credits and eco-rank here. Log eco-actions to earn credits and level up!'
+    },
+    {
+        target: '#globeCard',
+        title: 'CLIMATE MAP',
+        text: 'Explore live climate data from cities around the world — weather, air quality, and NASA disaster alerts.'
+    },
+    {
+        target: '#questCard',
+        title: 'DAILY CHALLENGES',
+        text: 'Complete daily eco-challenges to earn bonus XP and keep your streak going!'
+    },
+    {
+        target: '#chatBubble',
+        title: 'AI ASSISTANT',
+        text: 'Chat with our AI to get climate info, eco-tips, or ask questions about the environment.'
+    }
+];
+
+let currentTourStep = 0;
+let tourActive = false;
+
+function initTour() {
+    if (localStorage.getItem('greenclawTourCompleted') === 'true') return;
+
+    // Slight delay to allow UI to render and globe to map
+    setTimeout(() => {
+        startTour();
+    }, 1500);
+}
+
+function startTour() {
+    tourActive = true;
+    currentTourStep = 0;
+
+    document.getElementById('tourOverlay').style.display = 'block';
+    const overlay = document.getElementById('tourOverlay');
+    const tooltip = document.getElementById('tourTooltip');
+
+    // Trigger reflow for transition
+    void overlay.offsetWidth;
+    overlay.style.opacity = '1';
+
+    tooltip.style.display = 'block';
+
+    // Switch to appropriate tab if needed (assuming intelligence tab for globe)
+    // Actually, all targets except Earth are on Home, Earth is on Intelligence
+
+    renderTourStep();
+}
+
+function endTour() {
+    tourActive = false;
+    localStorage.setItem('greenclawTourCompleted', 'true');
+
+    const overlay = document.getElementById('tourOverlay');
+    const tooltip = document.getElementById('tourTooltip');
+
+    overlay.style.opacity = '0';
+    tooltip.classList.remove('active');
+
+    // Remove previous highlights
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        tooltip.style.display = 'none';
+    }, 500);
+}
+
+function skipTour() {
+    endTour();
+}
+
+function nextTourStep() {
+    currentTourStep++;
+    if (currentTourStep >= tourSteps.length) {
+        endTour();
+    } else {
+        renderTourStep();
+    }
+}
+
+function renderTourStep() {
+    const step = tourSteps[currentTourStep];
+    const tooltip = document.getElementById('tourTooltip');
+    const titleEl = tooltip.querySelector('.tour-title');
+    const textEl = document.getElementById('tourText');
+    const progressEl = document.getElementById('tourProgress');
+    const nextBtn = tooltip.querySelector('.tour-btn-next');
+
+    // Remove previous highlights
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+    // Auto-switch tabs to ensure element is visible
+    if (step.target === '#walletCard' || step.target === '#questCard') {
+        switchTab('home');
+    } else if (step.target === '#globeCard') {
+        switchTab('intelligence');
+    }
+
+    // Use setTimeout to allow DOM to switch tabs if necessary
+    setTimeout(() => {
+        const targetEl = document.querySelector(step.target);
+        if (targetEl) {
+            targetEl.classList.add('tour-highlight');
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Wait for scroll
+            setTimeout(() => {
+                const rect = targetEl.getBoundingClientRect();
+                positionTooltip(rect, tooltip);
+
+                titleEl.textContent = step.title;
+                textEl.textContent = step.text;
+                progressEl.textContent = `${currentTourStep + 1}/${tourSteps.length}`;
+
+                if (currentTourStep === tourSteps.length - 1) {
+                    nextBtn.textContent = 'Finish';
+                } else {
+                    nextBtn.textContent = 'Next ⟶';
+                }
+
+                tooltip.classList.add('active');
+            }, 300); // Wait for scroll animation
+        } else {
+            // Target not found, skip step
+            nextTourStep();
+        }
+    }, 100);
+}
+
+function positionTooltip(targetRect, tooltip) {
+    const tooltipWidth = tooltip.offsetWidth || 320;
+    const tooltipHeight = tooltip.offsetHeight || 180;
+
+    // Calculate horizontal center relative to the full document width (including scroll)
+    let left = targetRect.left + window.scrollX + (targetRect.width / 2) - (tooltipWidth / 2);
+
+    // Ensure it doesn't overflow horizontally
+    if (left < 10) left = 10;
+    if (left + tooltipWidth > window.innerWidth + window.scrollX - 10) {
+        left = window.innerWidth + window.scrollX - tooltipWidth - 10;
+    }
+
+    // Default vertical position: Bottom
+    let top = targetRect.bottom + window.scrollY + 15;
+
+    // Check available space below the element in the CURRENT viewport
+    const spaceBelow = window.innerHeight - targetRect.bottom;
+
+    // If there is not enough space below (e.g. less than tooltip height + padding), put it ABOVE the element
+    if (spaceBelow < tooltipHeight + 30) {
+        top = targetRect.top + window.scrollY - tooltipHeight - 15;
+
+        // If it also overflows the top, clamp it inside the viewport
+        if ((top - window.scrollY) < 10) {
+            top = window.scrollY + 10;
+        }
+    }
+
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+}
+
+// Hook tour init into window load
+window.addEventListener('load', initTour);

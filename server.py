@@ -100,6 +100,13 @@ class QuestCompleteRequest(BaseModel):
     user: str = "anonymous"
     quest_id: int
 
+class CarbonFootprintRequest(BaseModel):
+    transport: str = "car_petrol"  # car_petrol, car_electric, public_transit, bike_walk
+    diet: str = "mixed"  # meat_heavy, mixed, vegetarian, vegan
+    energy: str = "gas"  # gas, electric, renewable, mixed
+    flights: str = "occasional"  # frequent, occasional, rare, none
+    household: int = 1
+
 # ──────────────────────────────────────────────
 # HTTP Client
 # ──────────────────────────────────────────────
@@ -108,12 +115,35 @@ http = httpx.AsyncClient(timeout=30.0)
 # ──────────────────────────────────────────────
 # CLIMATE DATA ENDPOINTS
 # ──────────────────────────────────────────────
+import re
+
+_FILLER = [
+    r'\bright\s*now\b', r'\bcurrently\b', r'\bcurrent\b', r'\btoday\b',
+    r'\bweather\s*(in|for|at|of)?\b', r'\btemperature\s*(in|for|at|of)?\b',
+    r'\bclimate\s*(in|for|at|of)?\b', r'\baqi\s*(in|for|at|of)?\b',
+    r'\bair\s*quality\s*(in|for|at|of)?\b', r'\bhow\s*is\b', r"\bwhat'?s?\b",
+    r'\bthe\b', r'\btell\s*me\b', r'\bshow\s*me\b', r'\bget\b',
+    r'\bplease\b', r'\bcheck\b', r'\blook\s*up\b', r'\bfind\b',
+    r'\bforecast\s*(in|for|at|of)?\b',
+]
+
+def sanitize_city(raw: str) -> str:
+    """Strip common filler words from a user query to extract the city name."""
+    cleaned = raw.strip()
+    for p in _FILLER:
+        cleaned = re.sub(p, '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned if cleaned else raw.strip()
+
 @app.get("/api/climate/{city}")
 async def get_climate(city: str):
     """Fetch live weather + AQI + disasters for a city."""
+    city = sanitize_city(city)
     weather = await fetch_weather(city)
     aqi = await fetch_aqi(city)
     disasters = await fetch_disasters()
+    # Save snapshot for historical trends (Feature 7)
+    save_climate_snapshot(city, aqi.get("value", 0), weather.get("temp", 0))
     return {
         "city": city,
         "weather": weather,
@@ -123,6 +153,7 @@ async def get_climate(city: str):
     }
 
 async def fetch_weather(city: str) -> dict:
+    city = sanitize_city(city)
     if not OPENWEATHER_KEY:
         return {"error": "OPENWEATHER_API_KEY not set"}
     try:
@@ -171,6 +202,7 @@ async def fetch_weather(city: str) -> dict:
         return {"error": str(e)}
 
 async def fetch_aqi(city: str) -> dict:
+    city = sanitize_city(city)
     if not WAQI_KEY:
         return {"error": "WAQI_API_KEY not set"}
     try:
@@ -395,7 +427,11 @@ async def chat(req: ChatRequest):
         skill_used = "risk-analyzer"
         result = await analyze_risk(city)
         summary = format_risk_summary(result)
-    elif any(w in msg for w in ["tip", "advice", "eco", "sustainable", "green", "carbon", "reduce", "footprint"]):
+    elif any(w in msg for w in ["footprint", "carbon calculator", "my carbon", "my emission", "calculate carbon"]):
+        skill_used = "carbon-calculator"
+        result = await calculate_carbon_footprint(CarbonFootprintRequest())
+        summary = f"🧮 Your estimated annual carbon footprint: **{result.get('total_kg', '?')} kg CO₂** ({result.get('total_tonnes', '?')} tonnes). Use the Carbon Calculator on the dashboard for a detailed breakdown!"
+    elif any(w in msg for w in ["tip", "advice", "eco", "sustainable", "green", "carbon", "reduce"]):
         skill_used = "action-advisor"
         result = await get_advice(AdviceRequest(mode="tips", city=city))
         summary = format_advice_summary(result)
@@ -443,18 +479,38 @@ CO2_ESTIMATES = {
     "bike": (2.3, "🚲"), "cycle": (2.3, "🚲"), "walk": (0.8, "🚶"),
     "bus": (1.2, "🚌"), "train": (1.5, "🚆"), "carpool": (1.8, "🚗"),
     "vegan": (2.5, "🥗"), "vegetarian": (1.5, "🥗"), "plant": (5.0, "🌱"),
-    "planted": (5.0, "🌱"), "tree": (22.0, "🌳"), "reusable": (0.2, "🛍️"),
+    "planted tree": (22.0, "🌳"), "planted a tree": (22.0, "🌳"),
+    "grew a tree": (22.0, "🌳"), "reusable": (0.2, "🛍️"),
     "led": (0.3, "💡"), "unplug": (0.4, "🔌"), "solar": (3.0, "☀️"),
     "shower": (0.5, "🚿"), "laundry": (0.3, "👕"),
 }
 
+# Words that indicate harmful/non-eco actions — reject these
+HARMFUL_KEYWORDS = {"cut", "chop", "chopped", "burn", "burned", "burning", "dump", "dumped",
+                     "threw away", "littered", "wasted", "destroyed", "killed", "broke"}
+
 @app.post("/api/community/log")
 def log_community_action(req: ActionLogRequest):
     """Log an eco-action and estimate CO₂ savings."""
+    lower = req.action.lower()
+
+    # Check for harmful/gaming actions
+    is_harmful = any(h in lower for h in HARMFUL_KEYWORDS)
+    if is_harmful:
+        return {
+            "user": req.user,
+            "action": req.action,
+            "co2_kg": 0,
+            "emoji": "🚫",
+            "rejected": True,
+            "message": "That doesn't sound eco-friendly! Try a positive action like planting a tree, cycling, or recycling.",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
     co2 = 0.5
     emoji = "🌍"
     for keyword, (val, icon) in CO2_ESTIMATES.items():
-        if keyword in req.action.lower():
+        if keyword in lower:
             co2 = val
             emoji = icon
             break
@@ -837,7 +893,7 @@ def nft_status():
             "contract_deployed": bool(contract_addr),
             "contract_address": contract_addr,
             "minter_key_set": has_key,
-            "network": "Somnia Shannon Testnet",
+            "network": "Ethereum Sepolia",
             "chain_id": 50312,
             "explorer": EXPLORER,
         }
@@ -1194,6 +1250,9 @@ async def autonomous_pipeline():
                 val = aqi.get("value", 0)
                 weather = await fetch_weather(city)
                 temp = weather.get("temp", 20)
+
+                # Save snapshot for historical trends (Feature 7)
+                save_climate_snapshot(city, val, temp)
                 cond = weather.get("condition", "Unknown")
 
                 if isinstance(val, (int, float)) and val > 100:
@@ -1495,6 +1554,245 @@ def get_edu_response(msg: str) -> str:
     else:
         q = random.choice(QUIZ_QUESTIONS)
         return f"🎮 **Welcome to Edu Mode!** Let's learn about our planet!\n\n{q['q']}\n\n💡 **Fun Fact:** {random.choice(FUN_FACTS)}"
+
+# ══════════════════════════════════════════════
+# FEATURE 6: CARBON FOOTPRINT CALCULATOR
+# ══════════════════════════════════════════════
+CARBON_TRANSPORT = {"car_petrol": 4600, "car_diesel": 4200, "car_electric": 1500, "public_transit": 1200, "bike_walk": 0, "motorcycle": 2100}
+CARBON_DIET = {"meat_heavy": 3300, "mixed": 2500, "vegetarian": 1700, "vegan": 1500}
+CARBON_ENERGY = {"gas": 2900, "electric": 2100, "renewable": 500, "mixed": 2500}
+CARBON_FLIGHTS = {"frequent": 3400, "occasional": 1200, "rare": 400, "none": 0}
+UK_AVG_CO2 = 5500
+GLOBAL_AVG_CO2 = 4700
+
+@app.post("/api/carbon-footprint")
+async def calculate_carbon_footprint(req: CarbonFootprintRequest):
+    """Calculate annual carbon footprint from lifestyle inputs."""
+    t = CARBON_TRANSPORT.get(req.transport, 2500)
+    d = CARBON_DIET.get(req.diet, 2500)
+    e = CARBON_ENERGY.get(req.energy, 2500) / max(req.household, 1)
+    f = CARBON_FLIGHTS.get(req.flights, 1200)
+    total = t + d + e + f
+
+    breakdown = {
+        "transport": {"kg": round(t), "pct": round(t / total * 100), "label": "🚗 Transport"},
+        "diet":      {"kg": round(d), "pct": round(d / total * 100), "label": "🥗 Diet"},
+        "energy":    {"kg": round(e), "pct": round(e / total * 100), "label": "⚡ Home Energy"},
+        "flights":   {"kg": round(f), "pct": round(f / total * 100), "label": "✈️ Flights"},
+    }
+
+    result = {
+        "total_kg": round(total),
+        "total_tonnes": round(total / 1000, 1),
+        "breakdown": breakdown,
+        "vs_uk_pct": round((total / UK_AVG_CO2 - 1) * 100),
+        "vs_global_pct": round((total / GLOBAL_AVG_CO2 - 1) * 100),
+        "uk_avg": UK_AVG_CO2,
+        "global_avg": GLOBAL_AVG_CO2,
+        "rating": "🌳 Great" if total < 4000 else ("🌿 Good" if total < 5500 else ("🟡 Average" if total < 7000 else "🔴 High")),
+    }
+
+    # Get personalized reduction tips from FLock
+    if FLOCK_KEY:
+        try:
+            r = await http.post(
+                f"{FLOCK_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {FLOCK_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "qwen3-30b-a3b-instruct-2507",
+                    "messages": [
+                        {"role": "system", "content": "You are a carbon reduction expert. Respond only with valid JSON."},
+                        {"role": "user", "content": f"A user has an annual carbon footprint of {round(total)} kg CO₂. Breakdown: Transport={round(t)}kg (mode: {req.transport}), Diet={round(d)}kg ({req.diet}), Energy={round(e)}kg ({req.energy}), Flights={round(f)}kg ({req.flights}). Give 3 specific, actionable reduction strategies. Respond ONLY with JSON: {{\"strategies\": [{{\"action\": \"...\", \"savings_kg\": N, \"difficulty\": \"easy|medium|hard\"}}]}}"},
+                    ],
+                    "temperature": 0.6, "max_tokens": 500,
+                },
+                timeout=30.0,
+            )
+            r.raise_for_status()
+            content = r.json()["choices"][0]["message"]["content"].strip()
+            if "<think>" in content:
+                import re
+                content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+            if content.startswith("```"):
+                lines = content.split("\n")
+                content = "\n".join(lines[1:-1])
+            tips_data = json.loads(content)
+            result["strategies"] = tips_data.get("strategies", [])
+        except Exception as e:
+            result["strategies"] = [
+                {"action": "Switch to public transit 2 days/week", "savings_kg": 900, "difficulty": "medium"},
+                {"action": "Reduce meat to 3 days/week", "savings_kg": 500, "difficulty": "easy"},
+                {"action": "Switch to a green energy provider", "savings_kg": 1200, "difficulty": "easy"},
+            ]
+    else:
+        result["strategies"] = [
+            {"action": "Switch to public transit 2 days/week", "savings_kg": 900, "difficulty": "medium"},
+            {"action": "Reduce meat to 3 days/week", "savings_kg": 500, "difficulty": "easy"},
+            {"action": "Switch to a green energy provider", "savings_kg": 1200, "difficulty": "easy"},
+        ]
+
+    result["timestamp"] = datetime.now(timezone.utc).isoformat()
+    return result
+
+
+# ══════════════════════════════════════════════
+# FEATURE 7: HISTORICAL CLIMATE TRENDS
+# ══════════════════════════════════════════════
+HISTORY_FILE = DATA_DIR / "climate_history.json"
+
+def save_climate_snapshot(city: str, aqi_val, temp):
+    """Save a climate data point for trend tracking."""
+    history = {}
+    if HISTORY_FILE.exists():
+        try: history = json.loads(HISTORY_FILE.read_text())
+        except: pass
+    city_key = city.lower()
+    if city_key not in history:
+        history[city_key] = []
+    history[city_key].append({
+        "aqi": aqi_val if isinstance(aqi_val, (int, float)) else 0,
+        "temp": temp if isinstance(temp, (int, float)) else 0,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    })
+    # Keep last 100 data points per city
+    history[city_key] = history[city_key][-100:]
+    HISTORY_FILE.write_text(json.dumps(history, indent=2))
+
+@app.get("/api/climate/history/{city}")
+def get_climate_history(city: str):
+    """Get historical climate trend data for a city."""
+    history = {}
+    if HISTORY_FILE.exists():
+        try: history = json.loads(HISTORY_FILE.read_text())
+        except: pass
+    city_key = city.lower()
+    data = history.get(city_key, [])
+    return {
+        "city": city,
+        "data_points": len(data),
+        "history": data[-50:],  # Last 50 points
+    }
+
+
+# ══════════════════════════════════════════════
+# FEATURE 8: SHAREABLE IMPACT CARDS
+# ══════════════════════════════════════════════
+from fastapi.responses import HTMLResponse
+
+@app.get("/api/impact-card/{user}", response_class=HTMLResponse)
+def generate_impact_card(user: str):
+    """Generate a shareable HTML impact card for a user."""
+    wallets = load_wallets()
+    w = wallets.get(user, {"credits": 0, "lifetime_co2": 0, "actions_count": 0, "streak_days": 0})
+    _, rank_icon, rank_name = get_rank(w.get("credits", 0))
+    badges = load_badges()
+    user_badges = badges.get(user, [])
+    co2 = round(w.get("lifetime_co2", w.get("credits", 0)), 1)
+    trees = round(co2 / 22, 1)
+    car_km = round(co2 / 0.21)
+
+    badge_html = "".join(f'<span class="badge">{b.get("name", "🏅")}</span>' for b in user_badges[:6]) or '<span class="badge">No badges yet — start logging!</span>'
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GreenClaw Impact — {user}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{ font-family:'Inter',sans-serif; background:#0f172a; display:flex; justify-content:center; align-items:center; min-height:100vh; }}
+  .card {{ width:480px; background: linear-gradient(145deg,#1e293b 0%,#0f172a 100%); border-radius:24px; padding:40px; border:1px solid rgba(74,222,128,0.2); box-shadow: 0 0 60px rgba(74,222,128,0.08); position: relative; overflow: hidden; }}
+  .card::before {{ content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle at 30% 20%, rgba(74,222,128,0.06) 0%, transparent 50%); }}
+  .header {{ text-align:center; margin-bottom:24px; position:relative; }}
+  .rank {{ font-size:48px; margin-bottom:4px; }}
+  .username {{ color:#4ade80; font-size:20px; font-weight:800; }}
+  .rank-name {{ color:#94a3b8; font-size:14px; }}
+  .stats {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; position:relative; }}
+  .stat {{ background:rgba(255,255,255,0.04); border-radius:14px; padding:16px; text-align:center; border:1px solid rgba(255,255,255,0.06); }}
+  .stat-value {{ color:#f1f5f9; font-size:28px; font-weight:800; }}
+  .stat-label {{ color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }}
+  .badges {{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:16px 0; position:relative; }}
+  .badge {{ background:rgba(74,222,128,0.1); color:#4ade80; padding:4px 10px; border-radius:20px; font-size:12px; border:1px solid rgba(74,222,128,0.2); }}
+  .footer {{ text-align:center; color:#475569; font-size:11px; margin-top:20px; position:relative; }}
+  .logo {{ color:#4ade80; font-weight:800; }}
+  .equivalents {{ color:#94a3b8; font-size:13px; text-align:center; margin:12px 0; position:relative; }}
+  .download-btn {{ display:block; margin:20px auto 0; padding:12px 32px; background:linear-gradient(135deg,#4ade80,#22c55e); color:#0f172a; font-weight:700; border:none; border-radius:12px; cursor:pointer; font-size:14px; }}
+  .download-btn:hover {{ transform:scale(1.03); }}
+  @media print {{ .download-btn {{ display:none; }} }}
+</style>
+</head>
+<body>
+<div class="card" id="impact-card">
+  <div class="header">
+    <div class="rank">{rank_icon}</div>
+    <div class="username">{user}</div>
+    <div class="rank-name">{rank_name}</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-value">{co2}</div><div class="stat-label">kg CO₂ Saved</div></div>
+    <div class="stat"><div class="stat-value">{w.get('actions_count', 0)}</div><div class="stat-label">Eco-Actions</div></div>
+    <div class="stat"><div class="stat-value">{w.get('streak_days', 0)}🔥</div><div class="stat-label">Day Streak</div></div>
+    <div class="stat"><div class="stat-value">{len(user_badges)}</div><div class="stat-label">Badges Earned</div></div>
+  </div>
+  <div class="equivalents">🌳 {trees} trees · 🚗 {car_km} km not driven</div>
+  <div class="badges">{badge_html}</div>
+  <div class="footer">🌍🦞 <span class="logo">GreenClaw</span> — Climate Action Intelligence</div>
+  <button class="download-btn" onclick="window.print()">📤 Save / Share</button>
+</div>
+</body>
+</html>"""
+    return HTMLResponse(content=html)
+
+
+# ══════════════════════════════════════════════
+# FEATURE 9: LOCALIZED POLICY & FLOOD ALERTS
+# ══════════════════════════════════════════════
+@app.get("/api/policy-alerts/{city}")
+async def get_policy_alerts(city: str):
+    """Get UK Environment Agency flood warnings for a location."""
+    try:
+        r = await http.get(
+            "https://environment.data.gov.uk/flood-monitoring/id/floods",
+            params={"min-severity": 1, "_limit": 20},
+            timeout=15.0,
+        )
+        r.raise_for_status()
+        items = r.json().get("items", [])
+
+        # Filter by city name if possible
+        city_lower = city.lower()
+        alerts = []
+        for item in items:
+            desc = item.get("description", "")
+            area = item.get("eaAreaName", "")
+            severity = item.get("severityLevel", 4)
+            severity_label = {1: "Severe", 2: "Warning", 3: "Alert", 4: "Info"}.get(severity, "Info")
+            severity_icon = {1: "🔴", 2: "🟠", 3: "🟡", 4: "🔵"}.get(severity, "🔵")
+
+            # Include if city matches OR include all for broad awareness
+            if city_lower in desc.lower() or city_lower in area.lower() or len(alerts) < 5:
+                alerts.append({
+                    "description": desc,
+                    "area": area,
+                    "severity": severity,
+                    "severity_label": severity_label,
+                    "severity_icon": severity_icon,
+                    "message": item.get("message", ""),
+                    "time_raised": item.get("timeRaised", ""),
+                })
+
+        return {
+            "city": city,
+            "source": "UK Environment Agency",
+            "total_alerts": len(alerts),
+            "alerts": alerts[:10],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception as e:
+        return {"city": city, "source": "UK Environment Agency", "total_alerts": 0, "alerts": [], "error": str(e)}
+
 
 # ──────────────────────────────────────────────
 # SERVE LANDING PAGE + DASHBOARD

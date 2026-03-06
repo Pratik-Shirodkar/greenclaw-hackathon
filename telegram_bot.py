@@ -66,7 +66,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📸 Send a photo — Vision AI verification\n\n"
         "*💰 Rewards*\n"
         "/wallet — Your carbon credit wallet\n"
-        "/badges — Achievement NFT badges\n\n"
+        "/badges — Achievement NFT badges\n"
+        "/card — Shareable HTML impact card\n\n"
         "*👥 Community*\n"
         "/stats — Community impact dashboard\n"
         "/leaderboard — Top eco-warriors\n"
@@ -75,7 +76,10 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "*🎮 More*\n"
         "/tips — Sustainability tips\n"
         "/quiz — Climate quiz\n"
-        "/alerts — Autonomous alerts\n\n"
+        "/alerts — Autonomous alerts\n"
+        "/policy London — Flood & Policy warnings\n"
+        "/footprint car_petrol mixed gas frequent — Carbon calculator\n"
+        "/history London — Climate historical trends\n\n"
         "Or just type a message and I'll route it to the right agent! 🤖",
         parse_mode="Markdown"
     )
@@ -766,6 +770,140 @@ async def cmd_feed(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"⚠️ Error: {e}")
 
 # ──────────────────────────────────────────────
+# /footprint <transport> <diet> <energy> <flights>
+# ──────────────────────────────────────────────
+async def cmd_footprint(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 4:
+        await update.message.reply_text(
+            "🧮 *Carbon Footprint Calculator*\n\n"
+            "Usage: `/footprint <transport> <diet> <energy> <flights>`\n\n"
+            "*Options:*\n"
+            "🚗 *Transport*: car_petrol, car_diesel, car_electric, public_transit, bike_walk, motorcycle\n"
+            "🥗 *Diet*: meat_heavy, mixed, vegetarian, vegan\n"
+            "⚡ *Energy*: gas, electric, renewable, mixed\n"
+            "✈️ *Flights*: frequent, occasional, rare, none\n\n"
+            "_Example: /footprint car_petrol mixed gas occasional_",
+            parse_mode="Markdown"
+        )
+        return
+
+    transport, diet, energy, flights = context.args[:4]
+    await update.message.reply_text("🧮 Calculating your annual footprint...", parse_mode="Markdown")
+
+    try:
+        r = http.post(f"{API_BASE}/api/carbon-footprint", json={
+            "transport": transport,
+            "diet": diet,
+            "energy": energy,
+            "flights": flights,
+            "household": 1
+        }, timeout=60.0)
+        data = r.json()
+
+        if "error" in data:
+            await update.message.reply_text(f"⚠️ Error: {data['error']}")
+            return
+
+        msg = (
+            f"📊 *Your Carbon Footprint:*\n\n"
+            f"**Total:** {data.get('total_kg', 0)} kg CO₂ / year ({data.get('rating', '')})\n\n"
+            f"**Breakdown:**\n"
+        )
+        for key, bd in data.get("breakdown", {}).items():
+            msg += f"  {bd.get('label', '')}: {bd.get('kg', 0)} kg ({bd.get('pct', 0)}%)\n"
+
+        msg += f"\nvs UK Avg: {data.get('vs_uk_pct', 0)}%\n"
+        msg += f"vs Global Avg: {data.get('vs_global_pct', 0)}%\n\n"
+        msg += "💡 *Tips to Reduce:*\n"
+        
+        for i, tip in enumerate(data.get("strategies", [])[:3], 1):
+            msg += f"  {i}. {tip.get('action', '')} (-{tip.get('savings_kg', 0)}kg CO₂)\n"
+
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /history <city>
+# ──────────────────────────────────────────────
+async def cmd_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = " ".join(context.args) if context.args else "London"
+    try:
+        r = http.get(f"{API_BASE}/api/climate/history/{city}")
+        data = r.json()
+        
+        history = data.get("history", [])
+        if not history:
+            await update.message.reply_text(f"📉 No historical data available for {city} yet.")
+            return
+
+        msg = f"📉 *Historical Climate Trends: {city}*\n\n"
+        msg += f"Data points collected: {data.get('data_points', 0)}\n\n"
+        msg += "*Recent Log (Last 5):*\n"
+        
+        for point in history[-5:]:
+            ts = point.get('timestamp', '')[:16].replace('T', ' ')
+            msg += f"  {ts} — AQI: {point.get('aqi', 0)} | Temp: {point.get('temp', 0)}°C\n"
+            
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
+# /card
+# ──────────────────────────────────────────────
+async def cmd_card(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user.first_name or "telegram_user"
+    url = f"{API_BASE}/api/impact-card/{user.replace(' ', '%20')}"
+    
+    msg = (
+        f"🎨 *{user}'s Impact Card*\n\n"
+        f"Check out your beautiful, shareable HTML impact card:\n"
+        f"🔗 [View Impact Card]({url})\n\n"
+        f"_You can open this link in any browser, print it, or save it as a PDF!_"
+    )
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
+# ──────────────────────────────────────────────
+# /policy <city>
+# ──────────────────────────────────────────────
+async def cmd_policy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    city = " ".join(context.args) if context.args else "London"
+    await update.message.reply_text(f"🔍 Checking UK flood warnings and policies for *{city}*...", parse_mode="Markdown")
+    
+    try:
+        r = http.get(f"{API_BASE}/api/policy-alerts/{city}", timeout=30.0)
+        data = r.json()
+        
+        if "error" in data:
+            await update.message.reply_text(f"⚠️ Error: {data['error']}")
+            return
+            
+        alerts = data.get("alerts", [])
+        if not alerts:
+            await update.message.reply_text(f"✅ No active warnings found for {city}. ({data.get('source', '')})")
+            return
+            
+        msg = f"🌊 *Policy & Flood Alerts: {city}*\n_Source: {data.get('source', '')}_\n\n"
+        
+        for a in alerts[:5]:
+            msg += f"{a.get('severity_icon', '🔵')} *{a.get('severity_label', 'Info')}*\n"
+            msg += f"📍 Area: {a.get('area', 'Unknown')}\n"
+            msg += f"📝 {a.get('description', '').strip()}\n"
+            if a.get('message'):
+                # truncate long messages
+                m = a['message'][:150] + ("..." if len(a['message']) > 150 else "")
+                msg += f"ℹ️ _{m}_\n"
+            msg += "\n"
+            
+        if data.get("total_alerts", 0) > 5:
+            msg += f"_...and {data['total_alerts'] - 5} more alerts._\n"
+            
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
+
+# ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
 def main():
@@ -807,6 +945,12 @@ def main():
     app.add_handler(CommandHandler("leaderboard", cmd_leaderboard))
     app.add_handler(CommandHandler("challenge", cmd_challenge))
     app.add_handler(CommandHandler("feed", cmd_feed))
+    # 4 New Features
+    app.add_handler(CommandHandler("footprint", cmd_footprint))
+    app.add_handler(CommandHandler("history", cmd_history))
+    app.add_handler(CommandHandler("card", cmd_card))
+    app.add_handler(CommandHandler("policy", cmd_policy))
+    app.add_handler(CommandHandler("flood", cmd_policy))
 
     # Photo handler
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))

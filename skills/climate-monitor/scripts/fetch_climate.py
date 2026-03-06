@@ -15,10 +15,35 @@ try:
 except ImportError:
     print(json.dumps({"error": "requests library not installed. Run: pip install requests"}))
     sys.exit(1)
+import re
+
+
+# Common filler phrases users type that aren't part of a city name
+FILLER_PATTERNS = [
+    r'\bright\s*now\b', r'\bcurrently\b', r'\bcurrent\b', r'\btoday\b',
+    r'\bweather\s*(in|for|at|of)?\b', r'\btemperature\s*(in|for|at|of)?\b',
+    r'\bclimate\s*(in|for|at|of)?\b', r'\baqi\s*(in|for|at|of)?\b',
+    r'\bair\s*quality\s*(in|for|at|of)?\b', r'\bhow\s*is\b', r"\bwhat'?s?\b",
+    r'\bthe\b', r'\btell\s*me\b', r'\bshow\s*me\b', r'\bget\b',
+    r'\bplease\b', r'\bcheck\b', r'\blook\s*up\b', r'\bfind\b',
+    r'\bforecast\s*(in|for|at|of)?\b',
+]
+
+
+def sanitize_city(raw: str) -> str:
+    """Strip common filler words/phrases from a user's city query."""
+    cleaned = raw.strip()
+    for pattern in FILLER_PATTERNS:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+    # Collapse multiple spaces and strip
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    # If nothing is left after stripping, return original
+    return cleaned if cleaned else raw.strip()
 
 
 def get_weather(city: str, api_key: str) -> dict:
     """Fetch current weather and 5-day forecast from OpenWeatherMap."""
+    city = sanitize_city(city)
     # Current weather
     url = "https://api.openweathermap.org/data/2.5/weather"
     params = {"q": city, "appid": api_key, "units": "metric"}
@@ -99,6 +124,7 @@ def get_weather(city: str, api_key: str) -> dict:
 
 def get_aqi(city: str, api_key: str) -> dict:
     """Fetch Air Quality Index from WAQI."""
+    city = sanitize_city(city)
     url = f"https://api.waqi.info/feed/{city}/"
     params = {"token": api_key}
 

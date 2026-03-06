@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GreenClaw — Autonomous Climate Operations Center</title>
     <meta name="description"
-        content="5 AI agents that protect your city 24/7 without any human input. Powered by Z.AI GLM + FLock.io + OpenClaw.">
+        content="6 AI agents that protect your city 24/7 without any human input. Powered by Z.AI GLM + FLock.io + OpenClaw + Ethereum Sepolia Credentials.">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700;900&display=swap"
         rel="stylesheet">
     <style>
         *,
@@ -17,6 +17,11 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+            scroll-behavior: smooth;
         }
 
         :root {
@@ -156,13 +161,13 @@
 
         /* ── Hero ── */
         .hero {
-            min-height: 100vh;
+            min-height: 65vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 8rem 2rem 4rem;
+            padding: 6rem 2rem 1rem;
             position: relative;
         }
 
@@ -194,7 +199,7 @@
             font-weight: 900;
             line-height: 1.1;
             letter-spacing: -2px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             animation: fadeUp 0.8s ease-out 0.1s both;
         }
 
@@ -209,7 +214,7 @@
             font-size: 1.15rem;
             color: var(--text-dim);
             max-width: 680px;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             animation: fadeUp 0.8s ease-out 0.2s both;
             line-height: 1.7;
         }
@@ -224,7 +229,7 @@
 
         /* ── Agent Cards ── */
         .section {
-            padding: 6rem 2rem;
+            padding: 2rem 1.5rem;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -251,22 +256,22 @@
             text-align: center;
             color: var(--text-dim);
             max-width: 600px;
-            margin: 0 auto 3rem;
+            margin: 0 auto 1rem;
             font-size: 0.95rem;
         }
 
         .agents-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
         .agent-card {
             background: var(--bg-card);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 16px;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             text-align: center;
             transition: all 0.4s;
             position: relative;
@@ -310,8 +315,8 @@
         }
 
         .agent-card .agent-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
         }
 
         .agent-card h3 {
@@ -326,13 +331,13 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
         }
 
         .agent-card p {
             font-size: 0.82rem;
             color: var(--text-dim);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .agent-card .model-badge {
@@ -352,15 +357,15 @@
             justify-content: center;
             gap: 0.5rem;
             flex-wrap: wrap;
-            padding: 2rem 0;
+            padding: 1rem 0;
         }
 
         .flow-step {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 1.2rem 1.5rem;
+            gap: 4px;
+            padding: 1rem 1rem;
             background: var(--bg-card);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 14px;
@@ -397,9 +402,9 @@
             background: var(--bg-card);
             border: 1px solid rgba(74, 222, 128, 0.15);
             border-radius: 20px;
-            padding: 3rem;
+            padding: 1.5rem;
             text-align: center;
-            margin: 4rem auto;
+            margin: 1rem auto;
             max-width: 800px;
             position: relative;
             overflow: hidden;
@@ -421,7 +426,7 @@
 
         .demo-section p {
             color: var(--text-dim);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-size: 0.95rem;
             position: relative;
         }
@@ -476,11 +481,11 @@
             display: flex;
             align-items: center;
             gap: 1.5rem;
-            padding: 2rem;
+            padding: 1.5rem;
             background: rgba(74, 222, 128, 0.06);
             border: 1px solid rgba(74, 222, 128, 0.15);
             border-radius: 16px;
-            margin: 3rem 0;
+            margin: 1.5rem 0;
         }
 
         .sdg-icon {
@@ -570,6 +575,160 @@
                 text-align: center;
             }
         }
+
+        /* =========================================
+           ULTRA PREMIUM REDESIGN OVERRIDES
+           ========================================= */
+        h1,
+        h2,
+        h3,
+        h4,
+        .nav-name {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .bg-grid {
+            background: #030014;
+            /* Deep space darkness */
+        }
+
+        .bg-grid::after {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+        }
+
+        /* Orb background for Hero */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 60vw;
+            height: 60vw;
+            max-width: 800px;
+            max-height: 800px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.12) 0%, rgba(96, 165, 250, 0.08) 30%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: orbPulse 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .hero h1 {
+            text-shadow: 0 0 50px rgba(74, 222, 128, 0.2);
+            font-size: clamp(3rem, 7vw, 5.5rem);
+        }
+
+        /* Enhanced Buttons */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.9), rgba(34, 197, 94, 0.9));
+            color: #020a04 !important;
+            -webkit-text-fill-color: #020a04;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: skewX(-20deg);
+            animation: buttonShine 4s infinite;
+        }
+
+        @keyframes buttonShine {
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        /* Magnetic Glow Cards */
+        .agent-card,
+        .tech-card,
+        .flow-step {
+            background: rgba(10, 14, 25, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .agent-card::after,
+        .tech-card::after,
+        .flow-step::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            opacity: 0;
+            background: radial-gradient(400px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 255, 255, 0.06), transparent 40%);
+            transition: opacity 0.3s;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .agent-card:hover::after,
+        .tech-card:hover::after,
+        .flow-step:hover::after {
+            opacity: 1;
+        }
+
+        /* Nav Glassmorphism Enhancement */
+        nav {
+            background: rgba(3, 0, 14, 0.3);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 0.8rem 2rem;
+            background: rgba(3, 0, 14, 0.85);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Scroll Reveal Utility Classes */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .reveal-up.is-revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -584,6 +743,7 @@
         </a>
         <div class="nav-links">
             <a href="#agents">Agents</a>
+            <a href="#features">Features</a>
             <a href="#how-it-works">How it Works</a>
             <a href="#tech">Tech Stack</a>
             <a href="/dashboard" class="btn-primary">Open Dashboard →</a>
@@ -597,13 +757,13 @@
             Autonomous Agents Running Now
         </div>
         <h1>
-            5 AI Agents That Protect<br>
+            6 AI Agents That Protect<br>
             Your City <span class="gradient">24/7</span>
         </h1>
         <p>
             GreenClaw is an autonomous climate operations center. No human input needed —
-            our agents continuously monitor, analyze, reason, and alert across
-            web and Telegram using Z.AI and FLock.io.
+            our agents monitor, analyze, reason, alert, and calculate your carbon footprint
+            across web and Telegram using Z.AI, FLock.io, and Ethereum Sepolia Credentials.
         </p>
         <div class="hero-ctas">
             <a href="/dashboard" class="btn-primary">🚀 Launch Dashboard</a>
@@ -616,8 +776,8 @@
         <div class="section-label">Multi-Agent System</div>
         <h2 class="section-title">Meet the Team</h2>
         <p class="section-desc">
-            Five specialized AI agents that autonomously collaborate to detect environmental threats, analyze risks, and
-            protect communities.
+            Six specialized AI agents that autonomously collaborate to detect threats, analyze risks,
+            calculate footprints, and protect communities.
         </p>
 
         <div class="agents-grid">
@@ -643,8 +803,8 @@
                 <div class="agent-icon">💚</div>
                 <h3>Advisor</h3>
                 <div class="agent-role-text">Sustainability Coach</div>
-                <p>Uses FLock's open-source models to generate personalized, actionable eco-recommendations based on
-                    local conditions.</p>
+                <p>Uses FLock's open-source models to generate algorithmic directives and actionable field operations
+                    based on local conditions.</p>
                 <span class="model-badge" style="background:rgba(74,222,128,0.12);color:var(--green)">FLock
                     qwen3-30b</span>
             </div>
@@ -664,6 +824,14 @@
                 <p>Manages the autonomous pipeline — schedules scans, coordinates agent handoffs, and ensures complete
                     cycle execution.</p>
                 <span class="model-badge" style="background:rgba(167,139,250,0.12);color:var(--purple)">OpenClaw</span>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🧮</div>
+                <h3>Carbon Calc</h3>
+                <div class="agent-role-text">Footprint Estimator</div>
+                <p>Calculates annual CO₂ from lifestyle inputs (transport, diet, energy, flights). AI-powered reduction
+                    strategies via FLock.</p>
+                <span class="model-badge" style="background:rgba(34,211,238,0.12);color:#22d3ee">FLock qwen3</span>
             </div>
         </div>
     </section>
@@ -733,6 +901,56 @@
         </div>
     </section>
 
+    <!-- Features -->
+    <section class="section" id="features">
+        <div class="section-label">What You Get</div>
+        <h2 class="section-title">12 Production-Grade Features</h2>
+        <p class="section-desc">From autonomous climate monitoring to on-chain credentials — everything a Node Operator
+            needs.</p>
+        <div class="agents-grid">
+            <div class="agent-card">
+                <div class="agent-icon">🌡️</div>
+                <h3>Live Climate Data</h3>
+                <p>Real-time weather, AQI, and NASA disaster feeds for any city worldwide</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">⚠️</div>
+                <h3>AI Risk Analysis</h3>
+                <p>Z.AI GLM-4.5 powered risk reasoning with visual thinking chain</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🧮</div>
+                <h3>Carbon Calculator</h3>
+                <p>Estimate your annual CO₂ + get FLock AI-powered reduction strategies</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">📈</div>
+                <h3>Climate Trends</h3>
+                <p>Historical AQI and temperature charts that populate over time</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🏅</div>
+                <h3>On-Chain Credentials</h3>
+                <p>Earn clearance level NFTs on Ethereum Sepolia for consistent operations.</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🔥</div>
+                <h3>Uptime Streaks</h3>
+                <p>Uptime multipliers (up to 3×) and clearance level progression.</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">📤</div>
+                <h3>Impact Cards</h3>
+                <p>Beautiful shareable cards showing your clearance rank and CO₂ offset.</p>
+            </div>
+            <div class="agent-card">
+                <div class="agent-icon">🏛️</div>
+                <h3>Flood Alerts</h3>
+                <p>Real UK Environment Agency flood warnings with severity coding</p>
+            </div>
+        </div>
+    </section>
+
     <!-- Tech Stack -->
     <section class="section" id="tech">
         <div class="section-label">Built With</div>
@@ -772,6 +990,11 @@
                 <span class="tech-name">Live APIs</span>
                 <span class="tech-use">Weather + AQI + NASA</span>
             </div>
+            <div class="tech-card" style="grid-column: 1 / -1; justify-self: center; max-width: 250px;">
+                <span class="tech-icon">⛓️</span>
+                <span class="tech-name">Ethereum Sepolia</span>
+                <span class="tech-use">NFT Badges (ERC-721)</span>
+            </div>
         </div>
     </section>
 
@@ -782,9 +1005,48 @@
             Built for <a href="#">UK AI Agent Hackathon EP4</a> · Powered by
             <a href="https://z.ai">Z.AI</a>,
             <a href="https://flock.io">FLock.io</a>,
-            <a href="https://openclaw.org">OpenClaw</a>
+            <a href="https://openclaw.org">OpenClaw</a>,
+            <a href="https://sepolia.etherscan.io">Ethereum Sepolia</a>
         </p>
     </footer>
+
+    <!-- Redesign Interactive Scripts -->
+    <script>
+        // Nav Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+
+        // Intersection Observer for Scroll Reveals
+        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Dynamically add reveal class to all major sections
+        document.querySelectorAll('.section').forEach(el => {
+            el.classList.add('reveal-up');
+            observer.observe(el);
+        });
+
+        // Magnetic Mouse Glow on Cards
+        document.querySelectorAll('.agent-card, .tech-card, .flow-step').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
 </body>
 
 </html>
