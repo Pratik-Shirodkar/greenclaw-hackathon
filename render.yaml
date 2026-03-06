@@ -1,4 +1,5 @@
 services:
+  # ── Web Service: FastAPI Dashboard + API ──
   - type: web
     name: greenclaw
     runtime: python
@@ -7,3 +8,37 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: WAQI_API_KEY
+        sync: false
+      - key: ZAI_API_KEY
+        sync: false
+      - key: FLOCK_API_KEY
+        sync: false
+      - key: MINTER_PRIVATE_KEY
+        sync: false
+
+  # ── Background Worker: Telegram Bot ──
+  - type: worker
+    name: greenclaw-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python telegram_bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: GREENCLAW_API
+        sync: false  # Set this to your web service URL, e.g. https://greenclaw.onrender.com
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: WAQI_API_KEY
+        sync: false
+      - key: ZAI_API_KEY
+        sync: false
+      - key: FLOCK_API_KEY
+        sync: false
+      - key: MINTER_PRIVATE_KEY
+        sync: false
