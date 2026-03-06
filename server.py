@@ -1824,7 +1824,8 @@ async def serve_js():
 # ──────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.environ.get("PORT", 8000))
     print("🌍🦞 GreenClaw v2 — Starting server...")
-    print("   Dashboard: http://localhost:8000")
-    print("   API Docs:  http://localhost:8000/docs")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print(f"   Dashboard: http://localhost:{port}")
+    print(f"   API Docs:  http://localhost:{port}/docs")
+    uvicorn.run(app, host="0.0.0.0", port=port)
