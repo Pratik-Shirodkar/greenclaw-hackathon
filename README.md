@@ -19,15 +19,15 @@ GreenClaw is a **fully autonomous climate operations center** — 6 specialized 
 ### Architecture
 
 ```
-User (Web Dashboard / Telegram Bot / CLI)
-         │
-         ▼
-┌──────────────────────────────┐
-│    OpenClaw Gateway          │
-│    (Autonomous Orchestrator) │
-└──────────┬───────────────────┘
-           │
-    ┌──────┼──────┬──────────┬──────────┬──────────┐
+User (Web Dashboard)                  User (Telegram App)
+         │                                     │
+         ▼                                     ▼
+┌─────────────────────────┐          ┌───────────────────────────┐
+│     OpenClaw Gateway    │          │  Animoca Minds Agent      │
+│ (Dashboard Orchestrator)│          │ (Telegram Orchestrator)   │
+└──────────┬──────────────┘          └───────────┬───────────────┘
+           │                                     │
+    ┌──────┼──────┬──────────┬──────────┬──────────┤
     ▼      ▼      ▼          ▼          ▼          ▼
  🌡️ Climate ⚠️ Risk   💚 Action   📊 Community  🎮 Edu   🧮 Carbon
   Monitor   Analyzer  Advisor    Tracker      Mode   Calculator
@@ -107,11 +107,12 @@ cp .env.example .env
 ### 3. Run
 
 ```bash
-# Start the server (Dashboard + API + Autonomous Pipeline)
+# Start the server (Dashboard + API + OpenClaw Gateway)
 python server.py
 
-# In a separate terminal, start the Telegram bot
-python telegram_bot.py
+# Note: The Telegram Bot is now fully autonomous and hosted 
+# directly on the Animoca Minds decentralized network! 
+# (See Animoca Integration section below)
 ```
 
 Then open:
@@ -143,6 +144,16 @@ GreenClaw integrates Z.AI deeply into its core architecture:
 - **Deep Reasoning (Risk Analyzer):** Z.AI GLM-4.5's advanced reasoning analyzes complex, multi-variable climate data (Weather, AQI, Disasters). Live "Thinking Mode" visualization in the dashboard shows the model's reasoning chain.
 - **Multimodal Vision (Telegram Bot):** Z.AI GLM-4V verifies field operation photos for proof-of-impact, bridging AI verification with blockchain rewards (Ethereum Sepolia NFT credentials).
 - **Autonomous 24/7 Operation:** Z.AI GLM powers the automated pipeline cycle — no human prompting required.
+
+---
+
+## 🏅 Animoca Minds Integration Evidence (Option A - Telegram Orchestrator)
+
+GreenClaw completely delegates its Telegram community management directly to the **Animoca Minds Ecosystem**:
+
+1. **Decentralized Mind Hosting:** Instead of running a local `telegram_bot.py` loop, the GreenClaw Orchestrator is deployed as an active "Mind" (ID: `8ac9a3…017e89`) on the Animoca network.
+2. **Direct Telegram Hook:** The Mind is natively linked directly to the `@GreenClaw_Animoca_Bot` via the Animoca Minds Dashboard.
+3. **Cognition Engine:** The agent operates 24/7 independently using SWARM tokens (`13,646.60 SWARM` allocated) to answer community climate queries without needing our local `server.py` to be online.
 
 ---
 

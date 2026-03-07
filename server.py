@@ -49,74 +49,19 @@ active_alerts: list[dict] = []
 alert_cities = ["London", "Delhi", "Tokyo", "Mumbai", "Beijing"]
 
 # ──────────────────────────────────────────────
-# Telegram Bot Background Thread
+# Telegram Bot Handling (Moved to Animoca Minds)
 # ──────────────────────────────────────────────
-def _run_telegram_bot():
-    """Run the Telegram bot in a separate thread with its own event loop."""
-    try:
-        import telegram_bot as tb
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        app = tb.Application.builder().token(tb.BOT_TOKEN).build()
-
-        # Register all command handlers (same as telegram_bot.main())
-        app.add_handler(tb.CommandHandler("start", tb.cmd_start))
-        app.add_handler(tb.CommandHandler("help", tb.cmd_start))
-        app.add_handler(tb.CommandHandler("climate", tb.cmd_climate))
-        app.add_handler(tb.CommandHandler("weather", tb.cmd_climate))
-        app.add_handler(tb.CommandHandler("risk", tb.cmd_risk))
-        app.add_handler(tb.CommandHandler("tips", tb.cmd_tips))
-        app.add_handler(tb.CommandHandler("advice", tb.cmd_tips))
-        app.add_handler(tb.CommandHandler("quiz", tb.cmd_quiz))
-        app.add_handler(tb.CommandHandler("log", tb.cmd_log))
-        app.add_handler(tb.CommandHandler("stats", tb.cmd_stats))
-        app.add_handler(tb.CommandHandler("alerts", tb.cmd_alerts))
-        app.add_handler(tb.CommandHandler("wallet", tb.cmd_wallet))
-        app.add_handler(tb.CommandHandler("connect", tb.cmd_connect))
-        app.add_handler(tb.CommandHandler("badges", tb.cmd_badges))
-        app.add_handler(tb.CommandHandler("debate", tb.cmd_debate))
-        app.add_handler(tb.CommandHandler("predict", tb.cmd_predict))
-        app.add_handler(tb.CommandHandler("quest", tb.cmd_quest))
-        app.add_handler(tb.CommandHandler("streak", tb.cmd_streak))
-        app.add_handler(tb.CommandHandler("leaderboard", tb.cmd_leaderboard))
-        app.add_handler(tb.CommandHandler("challenge", tb.cmd_challenge))
-        app.add_handler(tb.CommandHandler("feed", tb.cmd_feed))
-        app.add_handler(tb.CommandHandler("footprint", tb.cmd_footprint))
-        app.add_handler(tb.CommandHandler("history", tb.cmd_history))
-        app.add_handler(tb.CommandHandler("card", tb.cmd_card))
-        app.add_handler(tb.CommandHandler("policy", tb.cmd_policy))
-        app.add_handler(tb.CommandHandler("flood", tb.cmd_policy))
-        app.add_handler(tb.MessageHandler(tb.filters.PHOTO, tb.handle_photo))
-        app.add_handler(tb.MessageHandler(tb.filters.TEXT & ~tb.filters.COMMAND, tb.handle_message))
-
-        async def _start():
-            await app.initialize()
-            await app.start()
-            await app.updater.start_polling(allowed_updates=tb.Update.ALL_TYPES)
-            # Keep running forever
-            while True:
-                await asyncio.sleep(3600)
-
-        loop.run_until_complete(_start())
-    except Exception as e:
-        print(f"⚠️ Telegram bot failed to start: {e}")
+# The Telegram Bot is now fully autonomous and hosted directly on the Animoca 
+# Minds decentralized network. The local polling loop has been removed to prevent 
+# webhook conflicts with the active Animoca Mind integration.
 
 # ──────────────────────────────────────────────
-# Lifespan (background alert monitor + telegram bot)
+# Lifespan (background alert monitor)
 # ──────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    import threading
     task = asyncio.create_task(autonomous_pipeline())
-    # Start Telegram bot in background thread if token is available
-    bot_thread = None
-    if os.getenv("TELEGRAM_BOT_TOKEN"):
-        bot_thread = threading.Thread(target=_run_telegram_bot, daemon=True)
-        bot_thread.start()
-        print("🤖 Telegram bot started in background thread")
-    else:
-        print("ℹ️  TELEGRAM_BOT_TOKEN not set — Telegram bot disabled")
+    print("🤖 GreenClaw API Gateway started. Telegram integration is handled by Animoca Minds.")
     yield
     task.cancel()
 
@@ -142,6 +87,9 @@ class ChatRequest(BaseModel):
     city: str = "London"
     kids_mode: bool = False
 
+class IntentRequest(BaseModel):
+    message: str
+
 class AdviceRequest(BaseModel):
     mode: str = "tips"
     city: str = "London"
@@ -154,6 +102,9 @@ class ActionLogRequest(BaseModel):
 class VisionLogRequest(BaseModel):
     user: str = "anonymous"
     image_base64: str
+
+class TrackRequest(BaseModel):
+    city: str
 
 class RegisterRequest(BaseModel):
     chat_id: int
@@ -436,6 +387,31 @@ async def get_advice(req: AdviceRequest):
         return {"error": f"FLock API error: {str(e)}"}
 
 # ──────────────────────────────────────────────
+# ALERTS / TRACKING
+# ──────────────────────────────────────────────
+@app.post("/api/alerts/track")
+async def track_city(req: TrackRequest):
+    """Add a custom city to the background autonomous agent loop."""
+    city = req.city.strip().title()
+    if not city:
+        return {"error": "City name cannot be empty.", "status": "error"}
+        
+    if city in alert_cities:
+        return {"message": f"🌍 Agents are already tracking **{city}**.", "status": "exists", "cities": alert_cities}
+        
+    if len(alert_cities) >= 10:
+        return {"error": "Monitor limit reached (10 max).", "status": "limit_reached"}
+        
+    alert_cities.append(city)
+    
+    # Inject immediate feedback into the agent log
+    agent_says("orchestrator", 
+        f"Pipeline parameters updated. Sentinel will now scan {city} in the next cycle.", 
+        action="update", city=city)
+        
+    return {"message": f"✅ Agents are now tracking **{city}**.", "status": "added", "cities": alert_cities}
+
+# ──────────────────────────────────────────────
 # CHAT (Orchestrator)
 # ──────────────────────────────────────────────
 @app.post("/api/chat")
@@ -511,17 +487,27 @@ async def chat(req: ChatRequest):
         disasters = await fetch_disasters()
         result = {"disasters": disasters}
         summary = format_disaster_summary(disasters)
-    elif any(w in msg for w in ["hello", "hi", "hey", "help"]):
+    elif any(w in msg for w in ["alert", "warn", "notify", "emergency"]):
+        summary = f"🔔 I continuously monitor climate data in the background and will alert you autonomously if danger arises! Use `/alerts` to view current global warnings, or `/predict {city.title()}` for upcoming risks."
+        result = {"type": "alerts_info"}
+    elif any(w in msg for w in ["hello", "hi", "hey", "help", "what else", "what can you do", "features", "options"]):
         summary = """👋 Hey! I'm **GreenClaw** 🌍🦞 — your AI climate action companion!
 
-Here's what I can do:
-🌡️ **"Weather in London"** — Real-time climate data
-⚠️ **"Risk analysis for Delhi"** — AI-powered risk assessment (Z.AI GLM)
-💚 **"Give me eco-tips"** — Sustainability advice (FLock.io)
-📊 **"Log: I recycled today"** — Track your eco-actions
-🎮 **"Quiz me!"** — Fun climate quiz
+Here's everything I can do for you:
+🌡️ **Weather/Climate** — What's the weather in London?
+⚠️ **Risk Analysis** — Analyze risk for Miami (Z.AI GLM)
+🛡️ **Alerts** — Show current global disaster warnings
+📜 **Policy** — What are the climate policies in NY?
+📅 **History** — Climate history of Paris
+💚 **Eco Tips** — Give me ways to save energy (FLock.io)
+📊 **Tracker** — Log: I planted a tree today
+🎮 **Quiz** — Ask me a climate question
+🧮 **Footprint** — Calculate my carbon footprint
+🪙 **Wallet/Stats** — Show my streak, wallet, or stats
+🏆 **Community** — Show leaderboard or weekly challenge
+🏷️ **Impact Card** — Generate my ID card
 
-What would you like to know?"""
+What would you like to explore?"""
         result = {"type": "greeting"}
     else:
         summary = f"🤔 I'm not sure what you mean by that. Try asking about **weather**, **risk analysis**, **eco-tips**, or say **help** to see what I can do!"
@@ -533,6 +519,62 @@ What would you like to know?"""
         "data": result,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+@app.post("/api/intent")
+async def intent_router(req: IntentRequest):
+    """Map natural language to one of our exact Telegram commands."""
+    if not ZAI_KEY:
+        return {"command": None}
+    
+    prompt = f"""You are a smart router for a climate action Telegram bot.
+Map the user's natural language message to ONE of these specific commands:
+/climate <city> (e.g. "what's the weather in Tokyo" -> "/climate Tokyo")
+/risk <city> (e.g. "is it dangerous in Miami" -> "/risk Miami")
+/predict <city> (e.g. "forecast for London" -> "/predict London")
+/debate <city> (e.g. "debate climate in NY" -> "/debate NY")
+/log <action> (e.g. "i just planted a tree" -> "/log planted a tree")
+/quest (e.g. "what are my quests", "give me a mission" -> "/quest")
+/streak (e.g. "show my streak", "did I be active today" -> "/streak")
+/wallet (e.g. "show my carbon credits", "points" -> "/wallet")
+/badges (e.g. "what achievements do I have" -> "/badges")
+/stats (e.g. "community impact" -> "/stats")
+/leaderboard (e.g. "who is number one" -> "/leaderboard")
+/challenge (e.g. "weekly challenge" -> "/challenge")
+/feed (e.g. "what are others doing" -> "/feed")
+/tips (e.g. "how can I save energy" -> "/tips")
+/quiz (e.g. "ask me a question" -> "/quiz")
+/footprint <transport> <diet> <energy> <flights> (e.g. "calculate footprint" -> "/footprint car_petrol mixed gas frequent")
+/alerts (e.g. "show alerts", "set alert for Pune", "warnings" -> "/alerts")
+/policy <city> (e.g. "what are the policies in London", "flood policies" -> "/policy London")
+/history <city> (e.g. "climate history of Paris", "past weather in Paris" -> "/history Paris")
+/card (e.g. "generate my impact card", "show my id" -> "/card")
+/track <city> (e.g. "track Chicago", "monitor Paris", "add Miami to alerts" -> "/track Miami")
+
+User message: "{req.message}"
+
+If the user's message is conversational, or doesn't map well to any command, return null.
+Respond ONLY with a valid JSON object:
+{{"command": "<the exact slash command string with arguments, or null>"}}
+"""
+    try:
+        r = await http.post(
+            f"{ZAI_BASE}/chat/completions",
+            headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "glm-4-plus",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.1,
+            },
+            timeout=10.0,
+        )
+        r.raise_for_status()
+        content = r.json()["choices"][0]["message"]["content"]
+        if "```json" in content: content = content.split("```json")[1].split("```")[0]
+        elif "```" in content: content = content.split("```")[1].split("```")[0]
+        data = json.loads(content.strip())
+        return {"command": data.get("command")}
+    except Exception as e:
+        return {"command": None, "error": str(e)}
 
 # ──────────────────────────────────────────────
 # COMMUNITY TRACKER
@@ -1617,6 +1659,12 @@ def get_edu_response(msg: str) -> str:
     else:
         q = random.choice(QUIZ_QUESTIONS)
         return f"🎮 **Welcome to Edu Mode!** Let's learn about our planet!\n\n{q['q']}\n\n💡 **Fun Fact:** {random.choice(FUN_FACTS)}"
+
+
+@app.get("/api/quiz")
+def get_quiz():
+    import random
+    return random.choice(QUIZ_QUESTIONS)
 
 # ══════════════════════════════════════════════
 # FEATURE 6: CARBON FOOTPRINT CALCULATOR
