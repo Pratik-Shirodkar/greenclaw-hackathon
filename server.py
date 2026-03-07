@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
-GreenClaw v2 ΓÇö Backend API Server
+GreenClaw v2 — Backend API Server
 FastAPI server that connects the dashboard to real APIs and provides
 an AI chat interface, automated alerts, and community tracking.
 """
@@ -25,9 +25,9 @@ from pydantic import BaseModel
 # Load environment variables (override=True ensures fresh .env values)
 load_dotenv(override=True)
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # Config
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 OPENWEATHER_KEY = os.getenv("OPENWEATHER_API_KEY", "")
 WAQI_KEY = os.getenv("WAQI_API_KEY", "")
 ZAI_KEY = os.getenv("ZAI_API_KEY", "")
@@ -48,9 +48,9 @@ QUESTS_FILE = DATA_DIR / "quests.json"
 active_alerts: list[dict] = []
 alert_cities = ["London", "Delhi", "Tokyo", "Mumbai", "Beijing"]
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # Telegram Bot Background Thread
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 def _run_telegram_bot():
     """Run the Telegram bot in a separate thread with its own event loop."""
     try:
@@ -100,11 +100,11 @@ def _run_telegram_bot():
 
         loop.run_until_complete(_start())
     except Exception as e:
-        print(f"ΓÜá∩╕Å Telegram bot failed to start: {e}")
+        print(f"⚠️ Telegram bot failed to start: {e}")
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # Lifespan (background alert monitor + telegram bot)
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import threading
@@ -114,9 +114,9 @@ async def lifespan(app: FastAPI):
     if os.getenv("TELEGRAM_BOT_TOKEN"):
         bot_thread = threading.Thread(target=_run_telegram_bot, daemon=True)
         bot_thread.start()
-        print("≡ƒñû Telegram bot started in background thread")
+        print("🤖 Telegram bot started in background thread")
     else:
-        print("Γä╣∩╕Å  TELEGRAM_BOT_TOKEN not set ΓÇö Telegram bot disabled")
+        print("ℹ️  TELEGRAM_BOT_TOKEN not set — Telegram bot disabled")
     yield
     task.cancel()
 
@@ -134,9 +134,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # Pydantic Models
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
     city: str = "London"
@@ -170,14 +170,14 @@ class CarbonFootprintRequest(BaseModel):
     flights: str = "occasional"  # frequent, occasional, rare, none
     household: int = 1
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # HTTP Client
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 http = httpx.AsyncClient(timeout=30.0)
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # CLIMATE DATA ENDPOINTS
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 import re
 
 _FILLER = [
@@ -315,9 +315,9 @@ async def fetch_disasters() -> list:
         print(f"NASA EONET API Error (Ignored): {e}")
         return []  # Gracefully hide disasters section if API is down
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # Z.AI RISK ANALYSIS
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @app.post("/api/risk/{city}")
 async def analyze_risk(city: str):
     """Run Z.AI GLM risk analysis on live climate data."""
@@ -333,7 +333,7 @@ async def analyze_risk(city: str):
     prompt = f"""You are an expert climate risk analyst. Analyze the following real-time environmental data and produce a comprehensive risk assessment.
 
 City: {city}
-Temperature: {weather.get('temp', 'N/A')}┬░C (Feels like: {weather.get('feels', 'N/A')}┬░C)
+Temperature: {weather.get('temp', 'N/A')}°C (Feels like: {weather.get('feels', 'N/A')}°C)
 Humidity: {weather.get('humidity', 'N/A')}%
 Wind: {weather.get('wind', 'N/A')} m/s
 Condition: {weather.get('condition', 'N/A')}
@@ -386,9 +386,9 @@ Respond with ONLY a valid JSON object:
     except Exception as e:
         return {"error": f"Z.AI API error: {str(e)}", "climate_data": climate}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FLOCK ACTION ADVISOR
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @app.post("/api/advice")
 async def get_advice(req: AdviceRequest):
     """Get sustainability advice from FLock open-source models."""
@@ -435,12 +435,12 @@ async def get_advice(req: AdviceRequest):
     except Exception as e:
         return {"error": f"FLock API error: {str(e)}"}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # CHAT (Orchestrator)
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
-    """Chat with GreenClaw ΓÇö routes to the appropriate skill."""
+    """Chat with GreenClaw — routes to the appropriate skill."""
     msg = req.message.lower()
     skill_used = "orchestrator"
     result = {}
@@ -466,7 +466,7 @@ async def chat(req: ChatRequest):
                     "messages": [
                         {
                             "role": "system",
-                            "content": "You are the GreenClaw Educator Agent ≡ƒÄ«. You are talking to a 7-year-old child who wants to learn about the planet. Answer playfully, use fun emojis, and keep your answer very short (2-3 sentences max). Explain complex climate concepts simply."
+                            "content": "You are the GreenClaw Educator Agent 🎮. You are talking to a 7-year-old child who wants to learn about the planet. Answer playfully, use fun emojis, and keep your answer very short (2-3 sentences max). Explain complex climate concepts simply."
                         },
                         {"role": "user", "content": req.message},
                     ],
@@ -493,7 +493,7 @@ async def chat(req: ChatRequest):
     elif any(w in msg for w in ["footprint", "carbon calculator", "my carbon", "my emission", "calculate carbon"]):
         skill_used = "carbon-calculator"
         result = await calculate_carbon_footprint(CarbonFootprintRequest())
-        summary = f"≡ƒº« Your estimated annual carbon footprint: **{result.get('total_kg', '?')} kg COΓéé** ({result.get('total_tonnes', '?')} tonnes). Use the Carbon Calculator on the dashboard for a detailed breakdown!"
+        summary = f"🧮 Your estimated annual carbon footprint: **{result.get('total_kg', '?')} kg CO₂** ({result.get('total_tonnes', '?')} tonnes). Use the Carbon Calculator on the dashboard for a detailed breakdown!"
     elif any(w in msg for w in ["tip", "advice", "eco", "sustainable", "green", "carbon", "reduce"]):
         skill_used = "action-advisor"
         result = await get_advice(AdviceRequest(mode="tips", city=city))
@@ -501,7 +501,7 @@ async def chat(req: ChatRequest):
     elif any(w in msg for w in ["log", "track", "recycle", "planted", "walked", "biked"]):
         skill_used = "community-tracker"
         result = log_community_action(ActionLogRequest(user="chat_user", action=req.message))
-        summary = f"Γ£à Logged your eco-action! {result.get('emoji', '≡ƒîì')} Estimated COΓéé saved: {result.get('co2_kg', 0)} kg"
+        summary = f"✅ Logged your eco-action! {result.get('emoji', '🌍')} Estimated CO₂ saved: {result.get('co2_kg', 0)} kg"
     elif any(w in msg for w in ["quiz", "question", "learn", "teach", "kid", "edu", "fun fact"]):
         skill_used = "edu-mode"
         summary = get_edu_response(msg)
@@ -512,19 +512,19 @@ async def chat(req: ChatRequest):
         result = {"disasters": disasters}
         summary = format_disaster_summary(disasters)
     elif any(w in msg for w in ["hello", "hi", "hey", "help"]):
-        summary = """≡ƒæï Hey! I'm **GreenClaw** ≡ƒîì≡ƒª₧ ΓÇö your AI climate action companion!
+        summary = """👋 Hey! I'm **GreenClaw** 🌍🦞 — your AI climate action companion!
 
 Here's what I can do:
-≡ƒîí∩╕Å **"Weather in London"** ΓÇö Real-time climate data
-ΓÜá∩╕Å **"Risk analysis for Delhi"** ΓÇö AI-powered risk assessment (Z.AI GLM)
-≡ƒÆÜ **"Give me eco-tips"** ΓÇö Sustainability advice (FLock.io)
-≡ƒôè **"Log: I recycled today"** ΓÇö Track your eco-actions
-≡ƒÄ« **"Quiz me!"** ΓÇö Fun climate quiz
+🌡️ **"Weather in London"** — Real-time climate data
+⚠️ **"Risk analysis for Delhi"** — AI-powered risk assessment (Z.AI GLM)
+💚 **"Give me eco-tips"** — Sustainability advice (FLock.io)
+📊 **"Log: I recycled today"** — Track your eco-actions
+🎮 **"Quiz me!"** — Fun climate quiz
 
 What would you like to know?"""
         result = {"type": "greeting"}
     else:
-        summary = f"≡ƒñö I'm not sure what you mean by that. Try asking about **weather**, **risk analysis**, **eco-tips**, or say **help** to see what I can do!"
+        summary = f"🤔 I'm not sure what you mean by that. Try asking about **weather**, **risk analysis**, **eco-tips**, or say **help** to see what I can do!"
         result = {"type": "fallback"}
 
     return {
@@ -534,27 +534,27 @@ What would you like to know?"""
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # COMMUNITY TRACKER
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 CO2_ESTIMATES = {
-    "recycle": (0.5, "ΓÖ╗∩╕Å"), "recycled": (0.5, "ΓÖ╗∩╕Å"), "compost": (0.3, "≡ƒ¬▒"),
-    "bike": (2.3, "≡ƒÜ▓"), "cycle": (2.3, "≡ƒÜ▓"), "walk": (0.8, "≡ƒÜ╢"),
-    "bus": (1.2, "≡ƒÜî"), "train": (1.5, "≡ƒÜå"), "carpool": (1.8, "≡ƒÜù"),
-    "vegan": (2.5, "≡ƒÑù"), "vegetarian": (1.5, "≡ƒÑù"), "plant": (5.0, "≡ƒî▒"),
-    "planted tree": (22.0, "≡ƒî│"), "planted a tree": (22.0, "≡ƒî│"),
-    "grew a tree": (22.0, "≡ƒî│"), "reusable": (0.2, "≡ƒ¢ì∩╕Å"),
-    "led": (0.3, "≡ƒÆí"), "unplug": (0.4, "≡ƒöî"), "solar": (3.0, "ΓÿÇ∩╕Å"),
-    "shower": (0.5, "≡ƒÜ┐"), "laundry": (0.3, "≡ƒæò"),
+    "recycle": (0.5, "♻️"), "recycled": (0.5, "♻️"), "compost": (0.3, "🪱"),
+    "bike": (2.3, "🚲"), "cycle": (2.3, "🚲"), "walk": (0.8, "🚶"),
+    "bus": (1.2, "🚌"), "train": (1.5, "🚆"), "carpool": (1.8, "🚗"),
+    "vegan": (2.5, "🥗"), "vegetarian": (1.5, "🥗"), "plant": (5.0, "🌱"),
+    "planted tree": (22.0, "🌳"), "planted a tree": (22.0, "🌳"),
+    "grew a tree": (22.0, "🌳"), "reusable": (0.2, "🛍️"),
+    "led": (0.3, "💡"), "unplug": (0.4, "🔌"), "solar": (3.0, "☀️"),
+    "shower": (0.5, "🚿"), "laundry": (0.3, "👕"),
 }
 
-# Words that indicate harmful/non-eco actions ΓÇö reject these
+# Words that indicate harmful/non-eco actions — reject these
 HARMFUL_KEYWORDS = {"cut", "chop", "chopped", "burn", "burned", "burning", "dump", "dumped",
                      "threw away", "littered", "wasted", "destroyed", "killed", "broke"}
 
 @app.post("/api/community/log")
 def log_community_action(req: ActionLogRequest):
-    """Log an eco-action and estimate COΓéé savings."""
+    """Log an eco-action and estimate CO₂ savings."""
     lower = req.action.lower()
 
     # Check for harmful/gaming actions
@@ -564,14 +564,14 @@ def log_community_action(req: ActionLogRequest):
             "user": req.user,
             "action": req.action,
             "co2_kg": 0,
-            "emoji": "≡ƒÜ½",
+            "emoji": "🚫",
             "rejected": True,
             "message": "That doesn't sound eco-friendly! Try a positive action like planting a tree, cycling, or recycling.",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     co2 = 0.5
-    emoji = "≡ƒîì"
+    emoji = "🌍"
     for keyword, (val, icon) in CO2_ESTIMATES.items():
         if keyword in lower:
             co2 = val
@@ -682,7 +682,7 @@ async def log_vision_action(req: VisionLogRequest):
             "user": req.user,
             "action": f"[Verified Photo] {desc}",
             "co2_kg": round(co2_saved, 2),
-            "emoji": "≡ƒô╕",
+            "emoji": "📸",
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
@@ -737,15 +737,15 @@ def community_stats():
         "recent": actions[-10:][::-1],
     }
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FEATURE 1: CARBON CREDIT WALLET
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 RANK_TIERS = [
-    (0,   "≡ƒî▒", "Seedling"),
-    (25,  "≡ƒî┐", "Sprout"),
-    (100, "≡ƒî│", "Tree"),
-    (500, "≡ƒîì", "Guardian"),
-    (1000,"≡ƒª₧", "GreenClaw Legend"),
+    (0,   "🌱", "Seedling"),
+    (25,  "🌿", "Sprout"),
+    (100, "🌳", "Tree"),
+    (500, "🌍", "Guardian"),
+    (1000,"🦞", "GreenClaw Legend"),
 ]
 
 def get_rank(credits: float) -> tuple:
@@ -840,18 +840,18 @@ def connect_wallet(user: str, address: str):
     
     return {"success": True, "user": user, "wallet_address": address}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FEATURE 2: AI-GENERATED ACHIEVEMENT NFT BADGES
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 MILESTONES = [
-    {"id": "genesis",      "name": "≡ƒî▒ Genesis Green",       "desc": "Completed your first eco-action!",     "threshold_type": "actions", "threshold": 1},
-    {"id": "halfcentury",  "name": "≡ƒî┐ Half Century Hero",   "desc": "Saved 50 kg of COΓéé!",                  "threshold_type": "credits", "threshold": 50},
-    {"id": "centurion",    "name": "≡ƒî│ Carbon Centurion",    "desc": "Saved 100 kg of COΓéé!",                 "threshold_type": "credits", "threshold": 100},
-    {"id": "streak7",      "name": "≡ƒöÑ Streak Master",       "desc": "7-day action streak!",                  "threshold_type": "streak",  "threshold": 7},
-    {"id": "streak30",     "name": "≡ƒÆÄ Streak Legend",        "desc": "30-day action streak!",                 "threshold_type": "streak",  "threshold": 30},
-    {"id": "photo_proof",  "name": "≡ƒô╕ Proof of Green",      "desc": "Verified an eco-action with Vision AI", "threshold_type": "vision",  "threshold": 1},
-    {"id": "guardian",     "name": "≡ƒîì Planet Guardian",      "desc": "Saved 500 kg of COΓéé!",                 "threshold_type": "credits", "threshold": 500},
-    {"id": "legend",       "name": "≡ƒª₧ GreenClaw Legend",     "desc": "Saved 1000 kg of COΓéé!",                "threshold_type": "credits", "threshold": 1000},
+    {"id": "genesis",      "name": "🌱 Genesis Green",       "desc": "Completed your first eco-action!",     "threshold_type": "actions", "threshold": 1},
+    {"id": "halfcentury",  "name": "🌿 Half Century Hero",   "desc": "Saved 50 kg of CO₂!",                  "threshold_type": "credits", "threshold": 50},
+    {"id": "centurion",    "name": "🌳 Carbon Centurion",    "desc": "Saved 100 kg of CO₂!",                 "threshold_type": "credits", "threshold": 100},
+    {"id": "streak7",      "name": "🔥 Streak Master",       "desc": "7-day action streak!",                  "threshold_type": "streak",  "threshold": 7},
+    {"id": "streak30",     "name": "💎 Streak Legend",        "desc": "30-day action streak!",                 "threshold_type": "streak",  "threshold": 30},
+    {"id": "photo_proof",  "name": "📸 Proof of Green",      "desc": "Verified an eco-action with Vision AI", "threshold_type": "vision",  "threshold": 1},
+    {"id": "guardian",     "name": "🌍 Planet Guardian",      "desc": "Saved 500 kg of CO₂!",                 "threshold_type": "credits", "threshold": 500},
+    {"id": "legend",       "name": "🦞 GreenClaw Legend",     "desc": "Saved 1000 kg of CO₂!",                "threshold_type": "credits", "threshold": 1000},
 ]
 
 def load_badges() -> dict:
@@ -915,14 +915,14 @@ def check_milestones(user: str, wallet: dict):
                         badge["nft_token_id"] = nft_token_id
                         badge["contract"] = result["contract"]
                         badge["explorer_url"] = result["explorer_url"]
-                        print(f"≡ƒÅà NFT minted on-chain! TX: {result['tx_hash']}")
+                        print(f"🏅 NFT minted on-chain! TX: {result['tx_hash']}")
                     else:
                         badge["on_chain"] = False
                         badge["mint_error"] = result.get("error", "Unknown")
-                        print(f"ΓÜá∩╕Å NFT mint failed: {result.get('error')}")
+                        print(f"⚠️ NFT mint failed: {result.get('error')}")
             except Exception as e:
                 badge["on_chain"] = False
-                print(f"ΓÜá∩╕Å NFT minting skipped: {e}")
+                print(f"⚠️ NFT minting skipped: {e}")
             
             user_badges.append(badge)
             new_badges.append(badge)
@@ -975,9 +975,9 @@ def nft_status():
     except Exception as e:
         return {"error": str(e)}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FEATURE 3: MULTI-AGENT CLIMATE DEBATE
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @app.get("/api/debate/{city}")
 async def climate_debate(city: str):
     """Run a multi-agent debate about climate strategy for a city."""
@@ -989,8 +989,8 @@ async def climate_debate(city: str):
     debate_log = []
     
     # Step 1: Sentinel presents the data
-    sentinel_msg = f"≡ƒôè Environmental briefing for {city}: Temp {weather.get('temp', '?')}┬░C, Humidity {weather.get('humidity', '?')}%, AQI {aqi.get('value', '?')} ({aqi.get('category', '?')}), {len(disasters)} active disasters nearby."
-    debate_log.append({"agent": "Sentinel", "icon": "≡ƒ¢░∩╕Å", "message": sentinel_msg})
+    sentinel_msg = f"📊 Environmental briefing for {city}: Temp {weather.get('temp', '?')}°C, Humidity {weather.get('humidity', '?')}%, AQI {aqi.get('value', '?')} ({aqi.get('category', '?')}), {len(disasters)} active disasters nearby."
+    debate_log.append({"agent": "Sentinel", "icon": "🛰️", "message": sentinel_msg})
     
     # Step 2: Analyst provides Z.AI risk analysis
     if ZAI_KEY:
@@ -1000,7 +1000,7 @@ async def climate_debate(city: str):
                 headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
                 json={
                     "model": "glm-4-plus",
-                    "messages": [{"role": "user", "content": f"You are a climate risk analyst in a debate. The data for {city}: Temp={weather.get('temp')}┬░C, AQI={aqi.get('value')}, Disasters={len(disasters)}. In 2-3 sentences, present your PRIMARY concern and propose a bold strategy. Be opinionated. Start with 'I believe...'"}],
+                    "messages": [{"role": "user", "content": f"You are a climate risk analyst in a debate. The data for {city}: Temp={weather.get('temp')}°C, AQI={aqi.get('value')}, Disasters={len(disasters)}. In 2-3 sentences, present your PRIMARY concern and propose a bold strategy. Be opinionated. Start with 'I believe...'"}],
                     "max_tokens": 150, "temperature": 0.8
                 },
                 timeout=30.0,
@@ -1010,7 +1010,7 @@ async def climate_debate(city: str):
             analyst_msg = f"Based on the data, the AQI of {aqi.get('value', '?')} is concerning and industrial emissions need immediate regulation."
     else:
         analyst_msg = f"The AQI reading of {aqi.get('value', '?')} warrants immediate attention from local authorities."
-    debate_log.append({"agent": "Analyst", "icon": "≡ƒºá", "message": analyst_msg})
+    debate_log.append({"agent": "Analyst", "icon": "🧠", "message": analyst_msg})
     
     # Step 3: Advisor counters with FLock
     if FLOCK_KEY:
@@ -1027,10 +1027,10 @@ async def climate_debate(city: str):
             )
             advisor_msg = r.json()["choices"][0]["message"]["content"].strip()
         except Exception as e:
-            advisor_msg = "I respectfully disagree ΓÇö community-level action through carpooling programs and urban gardens can have faster impact than waiting for policy changes."
+            advisor_msg = "I respectfully disagree — community-level action through carpooling programs and urban gardens can have faster impact than waiting for policy changes."
     else:
         advisor_msg = "Community-driven solutions are more practical and faster than policy changes."
-    debate_log.append({"agent": "Advisor", "icon": "≡ƒÆÜ", "message": advisor_msg})
+    debate_log.append({"agent": "Advisor", "icon": "💚", "message": advisor_msg})
     
     # Step 4: Analyst rebuts
     if ZAI_KEY:
@@ -1050,17 +1050,17 @@ async def climate_debate(city: str):
             rebuttal = "You make a fair point, but the data shows we need both approaches working in tandem for maximum effect."
     else:
         rebuttal = "A combined approach of policy and community action would be most effective."
-    debate_log.append({"agent": "Analyst", "icon": "≡ƒºá", "message": rebuttal})
+    debate_log.append({"agent": "Analyst", "icon": "🧠", "message": rebuttal})
     
     # Step 5: Dispatcher synthesizes
-    dispatcher_msg = f"≡ƒôï **Consensus Reached for {city}:** Both systemic and community approaches are needed. I'm broadcasting a combined action plan to all registered users."
-    debate_log.append({"agent": "Dispatcher", "icon": "≡ƒôó", "message": dispatcher_msg})
+    dispatcher_msg = f"📋 **Consensus Reached for {city}:** Both systemic and community approaches are needed. I'm broadcasting a combined action plan to all registered users."
+    debate_log.append({"agent": "Dispatcher", "icon": "📢", "message": dispatcher_msg})
     
     return {"city": city, "debate": debate_log, "climate_data": climate}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FEATURE 4: PREDICTIVE CLIMATE FORECAST
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 @app.get("/api/predict/{city}")
 async def predict_climate(city: str):
     """Use Z.AI thinking mode to predict climate risks 7 days ahead."""
@@ -1072,7 +1072,7 @@ async def predict_climate(city: str):
     if not ZAI_KEY:
         return {"error": "ZAI_API_KEY not set", "climate": climate}
     
-    forecast_text = "\n".join([f"  {f['date']}: High {f['high']}┬░C, Low {f['low']}┬░C, {f['cond']}" for f in forecast])
+    forecast_text = "\n".join([f"  {f['date']}: High {f['high']}°C, Low {f['low']}°C, {f['cond']}" for f in forecast])
     
     try:
         r = await http.post(
@@ -1082,7 +1082,7 @@ async def predict_climate(city: str):
                 "model": "glm-4-plus",
                 "messages": [{"role": "user", "content": f"""You are a predictive climate AI. Analyze this data for {city} and predict risks for the next 7 days.
 
-Current: Temp={weather.get('temp')}┬░C, Humidity={weather.get('humidity')}%, AQI={aqi.get('value')} ({aqi.get('category')}), Wind={weather.get('wind')}m/s
+Current: Temp={weather.get('temp')}°C, Humidity={weather.get('humidity')}%, AQI={aqi.get('value')} ({aqi.get('category')}), Wind={weather.get('wind')}m/s
 Forecast:
 {forecast_text}
 
@@ -1110,25 +1110,25 @@ Respond ONLY in valid JSON:
         print(f"Prediction error: {e}")
         return {"error": str(e), "climate": climate}
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # FEATURE 5: CLIMATE QUEST SYSTEM
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 DAILY_QUESTS = [
-    {"id": 1, "title": "≡ƒî▒ Plant a seed or water a plant", "xp": 20, "co2_kg": 2.0, "category": "nature"},
-    {"id": 2, "title": "≡ƒÜ▓ Walk or bike instead of driving", "xp": 15, "co2_kg": 3.5, "category": "transport"},
-    {"id": 3, "title": "≡ƒÆí Turn off 3 lights you're not using", "xp": 10, "co2_kg": 1.0, "category": "energy"},
-    {"id": 4, "title": "ΓÖ╗∩╕Å Recycle 5 items today", "xp": 15, "co2_kg": 2.5, "category": "waste"},
-    {"id": 5, "title": "≡ƒÑù Eat a plant-based meal", "xp": 20, "co2_kg": 4.0, "category": "food"},
-    {"id": 6, "title": "≡ƒôÜ Teach someone about climate change", "xp": 25, "co2_kg": 0.5, "category": "education"},
-    {"id": 7, "title": "≡ƒº┤ Use a reusable bottle all day", "xp": 10, "co2_kg": 1.5, "category": "waste"},
-    {"id": 8, "title": "≡ƒ¢ì∩╕Å Bring your own bag to the store", "xp": 10, "co2_kg": 1.0, "category": "waste"},
-    {"id": 9, "title": "≡ƒÜ┐ Take a 5-minute shower", "xp": 15, "co2_kg": 2.0, "category": "water"},
-    {"id": 10, "title": "≡ƒô▒ Share a climate fact on social media", "xp": 20, "co2_kg": 0.5, "category": "education"},
+    {"id": 1, "title": "🌱 Plant a seed or water a plant", "xp": 20, "co2_kg": 2.0, "category": "nature"},
+    {"id": 2, "title": "🚲 Walk or bike instead of driving", "xp": 15, "co2_kg": 3.5, "category": "transport"},
+    {"id": 3, "title": "💡 Turn off 3 lights you're not using", "xp": 10, "co2_kg": 1.0, "category": "energy"},
+    {"id": 4, "title": "♻️ Recycle 5 items today", "xp": 15, "co2_kg": 2.5, "category": "waste"},
+    {"id": 5, "title": "🥗 Eat a plant-based meal", "xp": 20, "co2_kg": 4.0, "category": "food"},
+    {"id": 6, "title": "📚 Teach someone about climate change", "xp": 25, "co2_kg": 0.5, "category": "education"},
+    {"id": 7, "title": "🧴 Use a reusable bottle all day", "xp": 10, "co2_kg": 1.5, "category": "waste"},
+    {"id": 8, "title": "🛍️ Bring your own bag to the store", "xp": 10, "co2_kg": 1.0, "category": "waste"},
+    {"id": 9, "title": "🚿 Take a 5-minute shower", "xp": 15, "co2_kg": 2.0, "category": "water"},
+    {"id": 10, "title": "📱 Share a climate fact on social media", "xp": 20, "co2_kg": 0.5, "category": "education"},
 ]
 
 LEVEL_XP = [0, 50, 150, 300, 500, 800, 1200, 1800, 2500, 3500, 5000]
-LEVEL_NAMES = ["≡ƒÑÜ Hatchling", "≡ƒÉú Sproutling", "≡ƒî▒ Seedling", "≡ƒî┐ Eco Rookie", "≡ƒî│ Green Scout",
-               "≡ƒªÄ Nature Ally", "≡ƒÉ¼ Ocean Friend", "≡ƒªà Sky Guardian", "≡ƒîì Earth Hero", "≡ƒª₧ Climate Champion", "≡ƒææ Eco Legend"]
+LEVEL_NAMES = ["🥚 Hatchling", "🐣 Sproutling", "🌱 Seedling", "🌿 Eco Rookie", "🌳 Green Scout",
+               "🦎 Nature Ally", "🐬 Ocean Friend", "🦅 Sky Guardian", "🌍 Earth Hero", "🦞 Climate Champion", "👑 Eco Legend"]
 
 @app.get("/api/quests")
 def get_quests():
@@ -1217,21 +1217,21 @@ def quest_profile(user: str):
         "quests_completed_today": len(today_completed),
     }
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # MULTI-AGENT CONVERSATION SYSTEM
 # 4 Named Agents that explicitly communicate:
-#   ≡ƒ¢░∩╕Å Sentinel  ΓÇö Environmental Monitor (scans data)
-#   ≡ƒºá Analyst   ΓÇö Risk Intelligence (Z.AI GLM deep reasoning)
-#   ≡ƒÆÜ Advisor   ΓÇö Sustainability Coach (FLock open-source advice)
-#   ≡ƒôó Dispatcher ΓÇö Alert Controller (pushes to channels)
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+#   🛰️ Sentinel  — Environmental Monitor (scans data)
+#   🧠 Analyst   — Risk Intelligence (Z.AI GLM deep reasoning)
+#   💚 Advisor   — Sustainability Coach (FLock open-source advice)
+#   📢 Dispatcher — Alert Controller (pushes to channels)
+# ──────────────────────────────────────────────
 
 AGENTS = {
-    "sentinel":   {"name": "Sentinel",   "icon": "≡ƒ¢░∩╕Å", "role": "Environmental Monitor",  "color": "#60a5fa"},
-    "analyst":    {"name": "Analyst",    "icon": "≡ƒºá", "role": "Risk Intelligence",       "color": "#fbbf24"},
-    "advisor":    {"name": "Advisor",    "icon": "≡ƒÆÜ", "role": "Sustainability Coach",    "color": "#4ade80"},
-    "dispatcher": {"name": "Dispatcher", "icon": "≡ƒôó", "role": "Alert Controller",        "color": "#f87171"},
-    "orchestrator": {"name": "Orchestrator", "icon": "≡ƒñû", "role": "Pipeline Controller", "color": "#a78bfa"},
+    "sentinel":   {"name": "Sentinel",   "icon": "🛰️", "role": "Environmental Monitor",  "color": "#60a5fa"},
+    "analyst":    {"name": "Analyst",    "icon": "🧠", "role": "Risk Intelligence",       "color": "#fbbf24"},
+    "advisor":    {"name": "Advisor",    "icon": "💚", "role": "Sustainability Coach",    "color": "#4ade80"},
+    "dispatcher": {"name": "Dispatcher", "icon": "📢", "role": "Alert Controller",        "color": "#f87171"},
+    "orchestrator": {"name": "Orchestrator", "icon": "🤖", "role": "Pipeline Controller", "color": "#a78bfa"},
 }
 
 agent_conversation: list[dict] = []
@@ -1244,7 +1244,7 @@ def get_alerts():
 
 @app.get("/api/pipeline/log")
 def get_pipeline_log():
-    """Legacy compat ΓÇö converts agent conversation to event format."""
+    """Legacy compat — converts agent conversation to event format."""
     events = []
     for msg in agent_conversation[-20:]:
         events.append({
@@ -1258,7 +1258,7 @@ def get_pipeline_log():
 
 @app.get("/api/agents/conversation")
 def get_agent_conversation():
-    """Get the multi-agent conversation ΓÇö the core differentiator."""
+    """Get the multi-agent conversation — the core differentiator."""
     return {
         "agents": AGENTS,
         "messages": agent_conversation[-30:],
@@ -1279,7 +1279,7 @@ def agent_says(agent_id: str, text: str, city: str = "global", action: str = "me
     agent_conversation.append(entry)
     if len(agent_conversation) > MAX_CONV:
         agent_conversation.pop(0)
-    to_str = f" ΓåÆ @{to}" if to else ""
+    to_str = f" → @{to}" if to else ""
     print(f"  {agent['icon']} {agent['name']}{to_str}: {text}")
 
 async def autonomous_pipeline():
@@ -1293,7 +1293,7 @@ async def autonomous_pipeline():
     while True:
         cycle += 1
 
-        # ΓöÇΓöÇ ORCHESTRATOR announces cycle ΓöÇΓöÇ
+        # ── ORCHESTRATOR announces cycle ──
         agent_says("orchestrator",
             f"Starting monitoring cycle #{cycle}. Sentinel, scan all monitored cities.",
             action="cycle_start", to="sentinel")
@@ -1302,7 +1302,7 @@ async def autonomous_pipeline():
         new_alerts = []
         high_risk_cities = []
 
-        # ΓöÇΓöÇ SENTINEL scans cities ΓöÇΓöÇ
+        # ── SENTINEL scans cities ──
         agent_says("sentinel",
             f"Roger. Scanning {len(alert_cities)} cities...",
             action="scan_start")
@@ -1323,8 +1323,8 @@ async def autonomous_pipeline():
 
                     if val > 150:
                         agent_says("sentinel",
-                            f"≡ƒÜ¿ {city}: AQI {val} ({aqi.get('category', '?')}), "
-                            f"exceeds WHO limit by {val - 50}%. Temp {temp}┬░C. Flagging for deep analysis.",
+                            f"🚨 {city}: AQI {val} ({aqi.get('category', '?')}), "
+                            f"exceeds WHO limit by {val - 50}%. Temp {temp}°C. Flagging for deep analysis.",
                             city=city, action="threshold_breach",
                             data={"aqi": val, "temp": temp, "severity": "danger"})
                         high_risk_cities.append({
@@ -1333,25 +1333,25 @@ async def autonomous_pipeline():
                         })
                     else:
                         agent_says("sentinel",
-                            f"ΓÜá∩╕Å {city}: AQI {val} ({aqi.get('category', '?')}), "
-                            f"temp {temp}┬░C. Above moderate threshold.",
+                            f"⚠️ {city}: AQI {val} ({aqi.get('category', '?')}), "
+                            f"temp {temp}°C. Above moderate threshold.",
                             city=city, action="threshold_breach",
                             data={"aqi": val, "temp": temp, "severity": "warning"})
 
                     new_alerts.append({
                         "type": "aqi", "city": city, "severity": severity,
-                        "message": f"ΓÜá∩╕Å {city}: AQI {val} ({aqi.get('category', 'Unknown')}). {aqi.get('advice', '')}",
+                        "message": f"⚠️ {city}: AQI {val} ({aqi.get('category', 'Unknown')}). {aqi.get('advice', '')}",
                         "value": val,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
                 if isinstance(temp, (int, float)) and temp > 40:
                     agent_says("sentinel",
-                        f"≡ƒöÑ {city}: {temp}┬░C ΓÇö extreme heat! Flagging immediately.",
+                        f"🔥 {city}: {temp}°C — extreme heat! Flagging immediately.",
                         city=city, action="heat_alert")
                     new_alerts.append({
                         "type": "heat", "city": city, "severity": "danger",
-                        "message": f"≡ƒöÑ {city}: {temp}┬░C! Stay hydrated, avoid outdoors.",
+                        "message": f"🔥 {city}: {temp}°C! Stay hydrated, avoid outdoors.",
                         "value": temp,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
@@ -1369,7 +1369,7 @@ async def autonomous_pipeline():
         if high_risk_cities:
             agent_says("sentinel",
                 f"Scan done. {len(new_alerts)} alerts. "
-                f"@Analyst ΓÇö need deep analysis on: {', '.join(c['city'] for c in high_risk_cities)}",
+                f"@Analyst — need deep analysis on: {', '.join(c['city'] for c in high_risk_cities)}",
                 action="handoff", to="analyst")
         elif new_alerts:
             agent_says("sentinel",
@@ -1377,15 +1377,15 @@ async def autonomous_pipeline():
                 action="scan_complete")
         else:
             agent_says("sentinel",
-                f"All {len(alert_cities)} cities safe. Γ£à", action="all_clear")
+                f"All {len(alert_cities)} cities safe. ✅", action="all_clear")
 
-        # ΓöÇΓöÇ ANALYST runs Z.AI ΓöÇΓöÇ
+        # ── ANALYST runs Z.AI ──
         for risk_city in high_risk_cities[:2]:
             city_name = risk_city["city"]
 
             agent_says("analyst",
                 f"Copy. Running Z.AI GLM-4-Plus on {city_name} "
-                f"(AQI {risk_city['aqi']}, {risk_city['temp']}┬░C)...",
+                f"(AQI {risk_city['aqi']}, {risk_city['temp']}°C)...",
                 city=city_name, action="analyzing", to="sentinel")
 
             try:
@@ -1397,41 +1397,41 @@ async def autonomous_pipeline():
                 agent_says("analyst",
                     f"{city_name}: Risk **{score}/10 ({level})**. "
                     f"Key: {recs[0] if recs else 'Monitor closely'}. "
-                    f"@Advisor ΓÇö generate protective recommendations.",
+                    f"@Advisor — generate protective recommendations.",
                     city=city_name, action="analysis_complete", to="advisor",
                     data={"score": score, "level": level, "model": "Z.AI GLM-4-Plus"})
 
                 for alert in new_alerts:
                     if alert["city"] == city_name:
                         alert["analysis"] = {"score": score, "level": level, "recommendations": recs[:3]}
-                        alert["message"] += f"\n≡ƒºá Z.AI: Risk {score}/10 ({level})"
+                        alert["message"] += f"\n🧠 Z.AI: Risk {score}/10 ({level})"
                         if recs:
-                            alert["message"] += f"\nΓåÆ {recs[0]}"
+                            alert["message"] += f"\n→ {recs[0]}"
 
             except Exception as e:
                 agent_says("analyst",
                     f"Z.AI failed for {city_name}: {str(e)[:60]}. "
-                    f"@Advisor ΓÇö use general safety recs.",
+                    f"@Advisor — use general safety recs.",
                     city=city_name, action="error", to="advisor")
 
-            # ΓöÇΓöÇ ADVISOR generates FLock tips ΓöÇΓöÇ
+            # ── ADVISOR generates FLock tips ──
             if FLOCK_KEY:
                 agent_says("advisor",
                     f"Querying FLock qwen3-30b for {city_name} "
-                    f"(AQI {risk_city['aqi']}, {risk_city['temp']}┬░C)...",
+                    f"(AQI {risk_city['aqi']}, {risk_city['temp']}°C)...",
                     city=city_name, action="advising")
 
                 try:
                     advice_result = await get_advice(AdviceRequest(
                         mode="tips", city=city_name,
-                        context=f"AQI is {risk_city['aqi']}, temperature is {risk_city['temp']}┬░C"
+                        context=f"AQI is {risk_city['aqi']}, temperature is {risk_city['temp']}°C"
                     ))
                     if "tips" in advice_result:
                         tips = [t.get("action", "") for t in advice_result["tips"][:3]]
                         agent_says("advisor",
                             f"FLock: {len(advice_result.get('tips', []))} tips for {city_name}. "
                             f"Top: \"{tips[0]}\". "
-                            f"@Dispatcher ΓÇö push alerts with analysis + tips.",
+                            f"@Dispatcher — push alerts with analysis + tips.",
                             city=city_name, action="advice_ready", to="dispatcher",
                             data={"tips": tips, "model": "FLock qwen3-30b"})
 
@@ -1439,7 +1439,7 @@ async def autonomous_pipeline():
                             if alert["city"] == city_name:
                                 alert["advice"] = tips
                                 if tips:
-                                    alert["message"] += f"\n≡ƒÆÜ Tip: {tips[0]}"
+                                    alert["message"] += f"\n💚 Tip: {tips[0]}"
                     elif "error" in advice_result:
                         agent_says("advisor",
                             f"FLock error: {advice_result['error'][:40]}",
@@ -1450,7 +1450,7 @@ async def autonomous_pipeline():
 
             await asyncio.sleep(1)
 
-        # ΓöÇΓöÇ DISPATCHER pushes alerts ΓöÇΓöÇ
+        # ── DISPATCHER pushes alerts ──
         active_alerts.clear()
         active_alerts.extend(new_alerts)
 
@@ -1459,8 +1459,8 @@ async def autonomous_pipeline():
             agent_says("dispatcher",
                 f"Published {len(new_alerts)} alerts. "
                 f"{enriched} enriched with Z.AI + FLock. "
-                f"Channels: Dashboard Γ£à"
-                + (f", Telegram ({len(high_risk_cities)} critical) ≡ƒô¿" if high_risk_cities else ""),
+                f"Channels: Dashboard ✅"
+                + (f", Telegram ({len(high_risk_cities)} critical) 📨" if high_risk_cities else ""),
                 action="alerts_pushed",
                 data={"count": len(new_alerts)})
                 
@@ -1471,11 +1471,11 @@ async def autonomous_pipeline():
                     registered_users = json.loads(USERS_FILE.read_text())
                     for alert in new_alerts:
                         if alert.get("severity") == "danger":
-                            msg = f"≡ƒÜ¿ *URGENT AUTONOMOUS ALERT* ≡ƒÜ¿\n\n**{alert['city']}**: {alert['message']}\n\n"
+                            msg = f"🚨 *URGENT AUTONOMOUS ALERT* 🚨\n\n**{alert['city']}**: {alert['message']}\n\n"
                             if "analysis" in alert:
-                                msg += f"≡ƒºá *Z.AI Analysis:* Risk {alert['analysis']['score']}/10 ({alert['analysis']['level']})\n"
+                                msg += f"🧠 *Z.AI Analysis:* Risk {alert['analysis']['score']}/10 ({alert['analysis']['level']})\n"
                             if "advice" in alert and alert["advice"]:
-                                msg += f"≡ƒÆÜ *FLock Tip:* {alert['advice'][0]}\n"
+                                msg += f"💚 *FLock Tip:* {alert['advice'][0]}\n"
                                 
                             for chat_id in registered_users.keys():
                                 try:
@@ -1490,9 +1490,9 @@ async def autonomous_pipeline():
                     print(f"Error broadcasting to telegram: {e}")
 
         else:
-            agent_says("dispatcher", "No alerts needed. All clear. ≡ƒƒó", action="all_clear")
+            agent_says("dispatcher", "No alerts needed. All clear. 🟢", action="all_clear")
 
-        # ΓöÇΓöÇ ORCHESTRATOR closes ΓöÇΓöÇ
+        # ── ORCHESTRATOR closes ──
         agent_says("orchestrator",
             f"Cycle #{cycle} done. {len(new_alerts)} alerts, "
             f"{len(high_risk_cities)} deep analyses. Next scan in 5 min.",
@@ -1502,39 +1502,39 @@ async def autonomous_pipeline():
 
 
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # HELPER FUNCTIONS
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 def weather_emoji(condition: str) -> str:
-    m = {"Clear": "ΓÿÇ∩╕Å", "Clouds": "Γÿü∩╕Å", "Rain": "≡ƒîº∩╕Å", "Drizzle": "≡ƒîª∩╕Å", "Thunderstorm": "Γ¢ê∩╕Å",
-         "Snow": "Γ¥ä∩╕Å", "Mist": "≡ƒî½∩╕Å", "Fog": "≡ƒî½∩╕Å", "Haze": "≡ƒî½∩╕Å", "Smoke": "≡ƒÆ¿", "Dust": "≡ƒî¬∩╕Å"}
-    return m.get(condition, "≡ƒîì")
+    m = {"Clear": "☀️", "Clouds": "☁️", "Rain": "🌧️", "Drizzle": "🌦️", "Thunderstorm": "⛈️",
+         "Snow": "❄️", "Mist": "🌫️", "Fog": "🌫️", "Haze": "🌫️", "Smoke": "💨", "Dust": "🌪️"}
+    return m.get(condition, "🌍")
 
 def disaster_emoji(categories: list) -> str:
-    m = {"Wildfires": "≡ƒöÑ", "Severe Storms": "≡ƒî¬∩╕Å", "Volcanoes": "≡ƒîï", "Floods": "≡ƒîè",
-         "Earthquakes": "≡ƒ½¿", "Drought": "≡ƒÅ£∩╕Å", "Dust and Haze": "≡ƒî½∩╕Å", "Sea and Lake Ice": "≡ƒºè",
-         "Snow": "Γ¥ä∩╕Å", "Landslides": "Γ¢░∩╕Å", "Temperature Extremes": "≡ƒîí∩╕Å"}
+    m = {"Wildfires": "🔥", "Severe Storms": "🌪️", "Volcanoes": "🌋", "Floods": "🌊",
+         "Earthquakes": "🫨", "Drought": "🏜️", "Dust and Haze": "🌫️", "Sea and Lake Ice": "🧊",
+         "Snow": "❄️", "Landslides": "⛰️", "Temperature Extremes": "🌡️"}
     for cat in categories:
         if cat in m:
             return m[cat]
-    return "ΓÜá∩╕Å"
+    return "⚠️"
 
 def aqi_category(val: int) -> tuple[str, str]:
-    if val <= 50: return "Good", "≡ƒƒó"
-    if val <= 100: return "Moderate", "≡ƒƒí"
-    if val <= 150: return "Unhealthy for Sensitive Groups", "≡ƒƒá"
-    if val <= 200: return "Unhealthy", "≡ƒö┤"
-    if val <= 300: return "Very Unhealthy", "≡ƒƒú"
-    return "Hazardous", "ΓÜ½"
+    if val <= 50: return "Good", "🟢"
+    if val <= 100: return "Moderate", "🟡"
+    if val <= 150: return "Unhealthy for Sensitive Groups", "🟠"
+    if val <= 200: return "Unhealthy", "🔴"
+    if val <= 300: return "Very Unhealthy", "🟣"
+    return "Hazardous", "⚫"
 
 def aqi_advice(category: str) -> str:
     m = {
-        "Good": "Air quality is satisfactory. Enjoy outdoor activities! ≡ƒî│",
+        "Good": "Air quality is satisfactory. Enjoy outdoor activities! 🌳",
         "Moderate": "Acceptable. Sensitive individuals should limit prolonged outdoor exertion.",
         "Unhealthy for Sensitive Groups": "Members of sensitive groups may experience health effects. Limit prolonged outdoor exertion.",
-        "Unhealthy": "Everyone may experience health effects. Limit outdoor exertion. Wear masks outdoors. ≡ƒÿ╖",
+        "Unhealthy": "Everyone may experience health effects. Limit outdoor exertion. Wear masks outdoors. 😷",
         "Very Unhealthy": "Health alert! Everyone should avoid outdoor exertion. Stay indoors.",
-        "Hazardous": "Emergency conditions! Everyone should avoid all outdoor activity. ≡ƒÜ¿",
+        "Hazardous": "Emergency conditions! Everyone should avoid all outdoor activity. 🚨",
     }
     return m.get(category, "Check local air quality guidelines.")
 
@@ -1542,85 +1542,85 @@ def format_climate_summary(data: dict) -> str:
     w = data.get("weather", {})
     a = data.get("aqi", {})
     if "error" in w:
-        return f"ΓÜá∩╕Å Could not fetch weather data: {w['error']}"
+        return f"⚠️ Could not fetch weather data: {w['error']}"
     lines = [
-        f"≡ƒîí∩╕Å **{data['city']}** ΓÇö {w.get('condition', 'N/A')} {w.get('icon', '')}",
-        f"**Temperature:** {w.get('temp', 'N/A')}┬░C (feels like {w.get('feels', 'N/A')}┬░C)",
-        f"**Humidity:** {w.get('humidity', 'N/A')}% ┬╖ **Wind:** {w.get('wind', 'N/A')} m/s",
+        f"🌡️ **{data['city']}** — {w.get('condition', 'N/A')} {w.get('icon', '')}",
+        f"**Temperature:** {w.get('temp', 'N/A')}°C (feels like {w.get('feels', 'N/A')}°C)",
+        f"**Humidity:** {w.get('humidity', 'N/A')}% · **Wind:** {w.get('wind', 'N/A')} m/s",
     ]
     if a and "error" not in a:
-        lines.append(f"**Air Quality:** {a.get('icon', '')} AQI {a.get('value', 'N/A')} ΓÇö {a.get('category', 'N/A')}")
+        lines.append(f"**Air Quality:** {a.get('icon', '')} AQI {a.get('value', 'N/A')} — {a.get('category', 'N/A')}")
         lines.append(f"_{a.get('advice', '')}_")
     return "\n".join(lines)
 
 def format_risk_summary(data: dict) -> str:
     if "error" in data:
-        return f"ΓÜá∩╕Å Risk analysis error: {data['error']}"
+        return f"⚠️ Risk analysis error: {data['error']}"
     lines = [
-        f"ΓÜá∩╕Å **Risk Assessment** ΓÇö Score: **{data.get('score', '?')}/10** ({data.get('level', '?')})",
-        f"_Confidence: {data.get('confidence', '?')} ┬╖ Model: {data.get('model', 'Z.AI')}_",
+        f"⚠️ **Risk Assessment** — Score: **{data.get('score', '?')}/10** ({data.get('level', '?')})",
+        f"_Confidence: {data.get('confidence', '?')} · Model: {data.get('model', 'Z.AI')}_",
         "",
     ]
     for r in data.get("risks", []):
-        lines.append(f"ΓÇó **{r['category']}** ({r['score']}/10): {r['desc']}")
+        lines.append(f"• **{r['category']}** ({r['score']}/10): {r['desc']}")
     lines.append("\n**Recommendations:**")
     for rec in data.get("recommendations", []):
-        lines.append(f"  ΓåÆ {rec}")
+        lines.append(f"  → {rec}")
     if data.get("sdg13"):
-        lines.append(f"\n≡ƒîì **SDG 13:** {data['sdg13']}")
+        lines.append(f"\n🌍 **SDG 13:** {data['sdg13']}")
     return "\n".join(lines)
 
 def format_advice_summary(data: dict) -> str:
     if "error" in data:
-        return f"ΓÜá∩╕Å Could not get advice: {data['error']}"
-    lines = ["≡ƒÆÜ **Eco-Tips for You:**\n"]
+        return f"⚠️ Could not get advice: {data['error']}"
+    lines = ["💚 **Eco-Tips for You:**\n"]
     for i, tip in enumerate(data.get("tips", []), 1):
-        impact = {"low": "≡ƒî▒", "medium": "≡ƒî┐", "high": "≡ƒî│"}.get(tip.get("impact", ""), "≡ƒîì")
-        lines.append(f"{i}. {impact} {tip.get('action', '')} ΓÇö saves ~{tip.get('carbon_savings_kg', '?')} kg COΓéé/year")
+        impact = {"low": "🌱", "medium": "🌿", "high": "🌳"}.get(tip.get("impact", ""), "🌍")
+        lines.append(f"{i}. {impact} {tip.get('action', '')} — saves ~{tip.get('carbon_savings_kg', '?')} kg CO₂/year")
     if data.get("motivation"):
         lines.append(f"\n_{data['motivation']}_")
     return "\n".join(lines)
 
 def format_disaster_summary(disasters: list) -> str:
     if not disasters:
-        return "Γ£à No active disasters detected globally!"
-    lines = [f"≡ƒÜ¿ **{len(disasters)} Active Disasters:**\n"]
+        return "✅ No active disasters detected globally!"
+    lines = [f"🚨 **{len(disasters)} Active Disasters:**\n"]
     for d in disasters[:6]:
         lines.append(f"  {d['icon']} **{d['title']}** ({d.get('date', 'recent')})")
     return "\n".join(lines)
 
 QUIZ_QUESTIONS = [
-    {"q": "≡ƒîì What gas do trees absorb from the atmosphere?", "a": "Carbon Dioxide (COΓéé)", "fact": "A single tree absorbs about 22 kg of COΓéé per year!"},
-    {"q": "ΓÿÇ∩╕Å What is the largest source of renewable energy?", "a": "Solar energy", "fact": "The sun produces enough energy in 1 second to power Earth for 500,000 years!"},
-    {"q": "≡ƒîè What percentage of Earth's surface is water?", "a": "About 71%", "fact": "The ocean absorbs 30% of the COΓéé we produce!"},
-    {"q": "≡ƒöï Which country generates the most wind energy?", "a": "China", "fact": "A single wind turbine can power 1,500 homes!"},
-    {"q": "≡ƒÉï How is a whale helpful for fighting climate change?", "a": "A whale captures ~33 tonnes of COΓéé in its lifetime!", "fact": "Whales are like swimming carbon sinks!"},
+    {"q": "🌍 What gas do trees absorb from the atmosphere?", "a": "Carbon Dioxide (CO₂)", "fact": "A single tree absorbs about 22 kg of CO₂ per year!"},
+    {"q": "☀️ What is the largest source of renewable energy?", "a": "Solar energy", "fact": "The sun produces enough energy in 1 second to power Earth for 500,000 years!"},
+    {"q": "🌊 What percentage of Earth's surface is water?", "a": "About 71%", "fact": "The ocean absorbs 30% of the CO₂ we produce!"},
+    {"q": "🔋 Which country generates the most wind energy?", "a": "China", "fact": "A single wind turbine can power 1,500 homes!"},
+    {"q": "🐋 How is a whale helpful for fighting climate change?", "a": "A whale captures ~33 tonnes of CO₂ in its lifetime!", "fact": "Whales are like swimming carbon sinks!"},
 ]
 
 FUN_FACTS = [
-    "≡ƒÉï A single large whale captures about 33 TONS of COΓéé over its lifetime!",
-    "≡ƒî▒ If every family in the UK planted one tree, it would capture 5 million tonnes of COΓéé!",
-    "≡ƒÜ▓ Biking 10 km instead of driving saves about 2.3 kg of COΓéé!",
-    "≡ƒîè The ocean absorbs about 30% of the COΓéé we produce ΓÇö it's Earth's giant sponge!",
-    "ΓÜí A wind turbine can power 1,500 homes for a whole year!",
-    "≡ƒî│ The Amazon rainforest produces 20% of the world's oxygen!",
-    "≡ƒÉ¥ Bees pollinate 75% of the food we eat ΓÇö protect the bees, protect our food!",
+    "🐋 A single large whale captures about 33 TONS of CO₂ over its lifetime!",
+    "🌱 If every family in the UK planted one tree, it would capture 5 million tonnes of CO₂!",
+    "🚲 Biking 10 km instead of driving saves about 2.3 kg of CO₂!",
+    "🌊 The ocean absorbs about 30% of the CO₂ we produce — it's Earth's giant sponge!",
+    "⚡ A wind turbine can power 1,500 homes for a whole year!",
+    "🌳 The Amazon rainforest produces 20% of the world's oxygen!",
+    "🐝 Bees pollinate 75% of the food we eat — protect the bees, protect our food!",
 ]
 
 import random
 def get_edu_response(msg: str) -> str:
     if "quiz" in msg or "question" in msg:
         q = random.choice(QUIZ_QUESTIONS)
-        return f"≡ƒÄ« **Climate Quiz Time!**\n\n{q['q']}\n\n_Think about it, then ask me for the answer!_\n\n≡ƒÆí **Fun Fact:** {q['fact']}"
+        return f"🎮 **Climate Quiz Time!**\n\n{q['q']}\n\n_Think about it, then ask me for the answer!_\n\n💡 **Fun Fact:** {q['fact']}"
     elif "fact" in msg:
-        return f"≡ƒîƒ **Did You Know?**\n\n{random.choice(FUN_FACTS)}"
+        return f"🌟 **Did You Know?**\n\n{random.choice(FUN_FACTS)}"
     else:
         q = random.choice(QUIZ_QUESTIONS)
-        return f"≡ƒÄ« **Welcome to Edu Mode!** Let's learn about our planet!\n\n{q['q']}\n\n≡ƒÆí **Fun Fact:** {random.choice(FUN_FACTS)}"
+        return f"🎮 **Welcome to Edu Mode!** Let's learn about our planet!\n\n{q['q']}\n\n💡 **Fun Fact:** {random.choice(FUN_FACTS)}"
 
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 # FEATURE 6: CARBON FOOTPRINT CALCULATOR
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 CARBON_TRANSPORT = {"car_petrol": 4600, "car_diesel": 4200, "car_electric": 1500, "public_transit": 1200, "bike_walk": 0, "motorcycle": 2100}
 CARBON_DIET = {"meat_heavy": 3300, "mixed": 2500, "vegetarian": 1700, "vegan": 1500}
 CARBON_ENERGY = {"gas": 2900, "electric": 2100, "renewable": 500, "mixed": 2500}
@@ -1638,10 +1638,10 @@ async def calculate_carbon_footprint(req: CarbonFootprintRequest):
     total = t + d + e + f
 
     breakdown = {
-        "transport": {"kg": round(t), "pct": round(t / total * 100), "label": "≡ƒÜù Transport"},
-        "diet":      {"kg": round(d), "pct": round(d / total * 100), "label": "≡ƒÑù Diet"},
-        "energy":    {"kg": round(e), "pct": round(e / total * 100), "label": "ΓÜí Home Energy"},
-        "flights":   {"kg": round(f), "pct": round(f / total * 100), "label": "Γ£ê∩╕Å Flights"},
+        "transport": {"kg": round(t), "pct": round(t / total * 100), "label": "🚗 Transport"},
+        "diet":      {"kg": round(d), "pct": round(d / total * 100), "label": "🥗 Diet"},
+        "energy":    {"kg": round(e), "pct": round(e / total * 100), "label": "⚡ Home Energy"},
+        "flights":   {"kg": round(f), "pct": round(f / total * 100), "label": "✈️ Flights"},
     }
 
     result = {
@@ -1652,7 +1652,7 @@ async def calculate_carbon_footprint(req: CarbonFootprintRequest):
         "vs_global_pct": round((total / GLOBAL_AVG_CO2 - 1) * 100),
         "uk_avg": UK_AVG_CO2,
         "global_avg": GLOBAL_AVG_CO2,
-        "rating": "≡ƒî│ Great" if total < 4000 else ("≡ƒî┐ Good" if total < 5500 else ("≡ƒƒí Average" if total < 7000 else "≡ƒö┤ High")),
+        "rating": "🌳 Great" if total < 4000 else ("🌿 Good" if total < 5500 else ("🟡 Average" if total < 7000 else "🔴 High")),
     }
 
     # Get personalized reduction tips from FLock
@@ -1665,7 +1665,7 @@ async def calculate_carbon_footprint(req: CarbonFootprintRequest):
                     "model": "qwen3-30b-a3b-instruct-2507",
                     "messages": [
                         {"role": "system", "content": "You are a carbon reduction expert. Respond only with valid JSON."},
-                        {"role": "user", "content": f"A user has an annual carbon footprint of {round(total)} kg COΓéé. Breakdown: Transport={round(t)}kg (mode: {req.transport}), Diet={round(d)}kg ({req.diet}), Energy={round(e)}kg ({req.energy}), Flights={round(f)}kg ({req.flights}). Give 3 specific, actionable reduction strategies. Respond ONLY with JSON: {{\"strategies\": [{{\"action\": \"...\", \"savings_kg\": N, \"difficulty\": \"easy|medium|hard\"}}]}}"},
+                        {"role": "user", "content": f"A user has an annual carbon footprint of {round(total)} kg CO₂. Breakdown: Transport={round(t)}kg (mode: {req.transport}), Diet={round(d)}kg ({req.diet}), Energy={round(e)}kg ({req.energy}), Flights={round(f)}kg ({req.flights}). Give 3 specific, actionable reduction strategies. Respond ONLY with JSON: {{\"strategies\": [{{\"action\": \"...\", \"savings_kg\": N, \"difficulty\": \"easy|medium|hard\"}}]}}"},
                     ],
                     "temperature": 0.6, "max_tokens": 500,
                 },
@@ -1698,9 +1698,9 @@ async def calculate_carbon_footprint(req: CarbonFootprintRequest):
     return result
 
 
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 # FEATURE 7: HISTORICAL CLIMATE TRENDS
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 HISTORY_FILE = DATA_DIR / "climate_history.json"
 
 def save_climate_snapshot(city: str, aqi_val, temp):
@@ -1737,9 +1737,9 @@ def get_climate_history(city: str):
     }
 
 
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 # FEATURE 8: SHAREABLE IMPACT CARDS
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 from fastapi.responses import HTMLResponse
 
 @app.get("/api/impact-card/{user}", response_class=HTMLResponse)
@@ -1754,14 +1754,14 @@ def generate_impact_card(user: str):
     trees = round(co2 / 22, 1)
     car_km = round(co2 / 0.21)
 
-    badge_html = "".join(f'<span class="badge">{b.get("name", "≡ƒÅà")}</span>' for b in user_badges[:6]) or '<span class="badge">No badges yet ΓÇö start logging!</span>'
+    badge_html = "".join(f'<span class="badge">{b.get("name", "🏅")}</span>' for b in user_badges[:6]) or '<span class="badge">No badges yet — start logging!</span>'
 
     html = f"""
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GreenClaw Impact ΓÇö {user}</title>
+<title>GreenClaw Impact — {user}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
   * {{ margin:0; padding:0; box-sizing:border-box; }}
@@ -1794,24 +1794,24 @@ def generate_impact_card(user: str):
     <div class="rank-name">{rank_name}</div>
   </div>
   <div class="stats">
-    <div class="stat"><div class="stat-value">{co2}</div><div class="stat-label">kg COΓéé Saved</div></div>
+    <div class="stat"><div class="stat-value">{co2}</div><div class="stat-label">kg CO₂ Saved</div></div>
     <div class="stat"><div class="stat-value">{w.get('actions_count', 0)}</div><div class="stat-label">Eco-Actions</div></div>
-    <div class="stat"><div class="stat-value">{w.get('streak_days', 0)}≡ƒöÑ</div><div class="stat-label">Day Streak</div></div>
+    <div class="stat"><div class="stat-value">{w.get('streak_days', 0)}🔥</div><div class="stat-label">Day Streak</div></div>
     <div class="stat"><div class="stat-value">{len(user_badges)}</div><div class="stat-label">Badges Earned</div></div>
   </div>
-  <div class="equivalents">≡ƒî│ {trees} trees ┬╖ ≡ƒÜù {car_km} km not driven</div>
+  <div class="equivalents">🌳 {trees} trees · 🚗 {car_km} km not driven</div>
   <div class="badges">{badge_html}</div>
-  <div class="footer">≡ƒîì≡ƒª₧ <span class="logo">GreenClaw</span> ΓÇö Climate Action Intelligence</div>
-  <button class="download-btn" onclick="window.print()">≡ƒôñ Save / Share</button>
+  <div class="footer">🌍🦞 <span class="logo">GreenClaw</span> — Climate Action Intelligence</div>
+  <button class="download-btn" onclick="window.print()">📤 Save / Share</button>
 </div>
 </body>
 </html>"""
     return HTMLResponse(content=html)
 
 
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 # FEATURE 9: LOCALIZED POLICY & FLOOD ALERTS
-# ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+# ══════════════════════════════════════════════
 @app.get("/api/policy-alerts/{city}")
 async def get_policy_alerts(city: str):
     """Get UK Environment Agency flood warnings for a location."""
@@ -1832,7 +1832,7 @@ async def get_policy_alerts(city: str):
             area = item.get("eaAreaName", "")
             severity = item.get("severityLevel", 4)
             severity_label = {1: "Severe", 2: "Warning", 3: "Alert", 4: "Info"}.get(severity, "Info")
-            severity_icon = {1: "≡ƒö┤", 2: "≡ƒƒá", 3: "≡ƒƒí", 4: "≡ƒö╡"}.get(severity, "≡ƒö╡")
+            severity_icon = {1: "🔴", 2: "🟠", 3: "🟡", 4: "🔵"}.get(severity, "🔵")
 
             # Include if city matches OR include all for broad awareness
             if city_lower in desc.lower() or city_lower in area.lower() or len(alerts) < 5:
@@ -1857,9 +1857,9 @@ async def get_policy_alerts(city: str):
         return {"city": city, "source": "UK Environment Agency", "total_alerts": 0, "alerts": [], "error": str(e)}
 
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # SERVE LANDING PAGE + DASHBOARD
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 DASHBOARD_DIR = Path(__file__).parent / "dashboard"
 LANDING_FILE = Path(__file__).parent / "landing.html"
 
@@ -1882,13 +1882,13 @@ async def serve_css():
 async def serve_js():
     return FileResponse(DASHBOARD_DIR / "dashboard.js", media_type="application/javascript")
 
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 # MAIN
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+# ──────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    print("≡ƒîì≡ƒª₧ GreenClaw v2 ΓÇö Starting server...")
+    print("🌍🦞 GreenClaw v2 — Starting server...")
     print(f"   Dashboard: http://localhost:{port}")
     print(f"   API Docs:  http://localhost:{port}/docs")
     uvicorn.run(app, host="0.0.0.0", port=port)
