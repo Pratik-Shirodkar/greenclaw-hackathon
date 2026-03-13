@@ -357,20 +357,26 @@ Respond with ONLY a valid JSON object:
 }}"""
 
     try:
-        r = await http.post(
-            f"{ZAI_BASE}/chat/completions",
-            headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": "glm-4-plus",
-                "messages": [
-                    {"role": "system", "content": "You are a climate risk analyst. Respond only with valid JSON."},
-                    {"role": "user", "content": prompt},
-                ],
-                "temperature": 0.3,
-                "max_tokens": 2000,
-            },
-        )
-        r.raise_for_status()
+        max_retries = 3
+        for attempt in range(max_retries):
+            r = await http.post(
+                f"{ZAI_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "glm-4-plus",
+                    "messages": [
+                        {"role": "system", "content": "You are a climate risk analyst. Respond only with valid JSON."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 2000,
+                },
+            )
+            if r.status_code == 429 and attempt < max_retries - 1:
+                await asyncio.sleep(2 ** attempt)
+                continue
+            r.raise_for_status()
+            break
         content = r.json()["choices"][0]["message"]["content"].strip()
         # Clean markdown
         if content.startswith("```"):
@@ -458,23 +464,29 @@ async def chat(req: ChatRequest):
     if req.kids_mode:
         skill_used = "edu-mode"
         try:
-            r = await http.post(
-                f"{ZAI_BASE}/chat/completions",
-                headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
-                json={
-                    "model": "glm-4-plus",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are the GreenClaw Educator Agent 🎮. You are talking to a 7-year-old child who wants to learn about the planet. Answer playfully, use fun emojis, and keep your answer very short (2-3 sentences max). Explain complex climate concepts simply."
-                        },
-                        {"role": "user", "content": req.message},
-                    ],
-                    "temperature": 0.8,
-                },
-                timeout=60.0,
-            )
-            r.raise_for_status()
+            max_retries = 3
+            for attempt in range(max_retries):
+                r = await http.post(
+                    f"{ZAI_BASE}/chat/completions",
+                    headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+                    json={
+                        "model": "glm-4-plus",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are the GreenClaw Educator Agent 🎮. You are talking to a 7-year-old child who wants to learn about the planet. Answer playfully, use fun emojis, and keep your answer very short (2-3 sentences max). Explain complex climate concepts simply."
+                            },
+                            {"role": "user", "content": req.message},
+                        ],
+                        "temperature": 0.8,
+                    },
+                    timeout=60.0,
+                )
+                if r.status_code == 429 and attempt < max_retries - 1:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                r.raise_for_status()
+                break
             summary = r.json()["choices"][0]["message"]["content"].strip()
             result = {"type": "edu-mode", "response": summary}
         except Exception as e:
@@ -625,25 +637,31 @@ async def log_vision_action(req: VisionLogRequest):
     
     try:
         # 1. Z.AI GLM-4V Vision Analysis
-        r_zai = await http.post(
-            f"{ZAI_BASE}/chat/completions",
-            headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": "glm-4v-plus",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{req.image_base64}"}}
-                        ]
-                    }
-                ],
-                "temperature": 0.5
-            },
-            timeout=60.0,
-        )
-        r_zai.raise_for_status()
+        max_retries = 3
+        for attempt in range(max_retries):
+            r_zai = await http.post(
+                f"{ZAI_BASE}/chat/completions",
+                headers={"Authorization": f"Bearer {ZAI_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": "glm-4v-plus",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{req.image_base64}"}}
+                            ]
+                        }
+                    ],
+                    "temperature": 0.5
+                },
+                timeout=60.0,
+            )
+            if r_zai.status_code == 429 and attempt < max_retries - 1:
+                await asyncio.sleep(2 ** attempt)
+                continue
+            r_zai.raise_for_status()
+            break
         
         zai_content = r_zai.json()["choices"][0]["message"]["content"].strip()
         if zai_content.startswith("```json"):
